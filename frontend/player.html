@@ -4,32 +4,140 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Player - MTG Tournament</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { overscroll-behavior: none; }
+        :root {
+            --primary: #8B5CF6;
+            --primary-dark: #7C3AED;
+            --accent: #F59E0B;
+            --bg-dark: #0F0F1A;
+            --bg-card: #1A1A2E;
+            --bg-card-hover: #252540;
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --success: #10B981;
+            --danger: #EF4444;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            background-image: 
+                radial-gradient(ellipse at top, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom right, rgba(245, 158, 11, 0.1) 0%, transparent 50%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overscroll-behavior: none;
+        }
+        
+        .font-cinzel { font-family: 'Cinzel', serif; }
+        
+        .glass-card {
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+        }
+        
+        .glow-border {
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(139, 92, 246, 0.5);
+        }
+        .btn-primary:active { transform: translateY(0); }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(239, 68, 68, 0.5);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+        
+        .health-bar-container {
+            height: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .health-bar {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.5s ease, background 0.3s ease;
+        }
+        
         .health-display {
-            font-size: 5rem;
+            font-size: 6rem;
+            font-weight: 700;
             line-height: 1;
-            text-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            text-shadow: 0 0 40px rgba(139, 92, 246, 0.5);
+            font-family: 'Cinzel', serif;
         }
-        .btn-health {
-            touch-action: manipulation;
-            user-select: none;
+        
+        .opponent-health {
+            font-size: 3rem;
+            font-weight: 600;
+            opacity: 0.9;
         }
+        
         .color-icon {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             display: inline-block;
             margin: 0 4px;
             background-size: cover;
             background-position: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
         }
+        .color-icon:hover { transform: scale(1.1); }
+        
         .color-W { background-image: url('assets/avatars/W.svg'); }
         .color-U { background-image: url('assets/avatars/U.svg'); }
         .color-B { background-image: url('assets/avatars/B.svg'); }
         .color-R { background-image: url('assets/avatars/R.svg'); }
         .color-G { background-image: url('assets/avatars/G.svg'); }
+        
+        .color-selector {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .color-selector:hover {
+            transform: scale(1.1);
+            border-color: rgba(255,255,255,0.3);
+        }
+        .color-selector.selected {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.6);
+            transform: scale(1.05);
+        }
+        
         .modal {
             display: none;
             position: fixed;
@@ -38,73 +146,103 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.7);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
         }
         .modal.active {
             display: flex;
             align-items: center;
             justify-content: center;
+            animation: fadeIn 0.3s ease;
         }
-        .modal-content {
-            background-color: #1f2937;
-            padding: 2rem;
-            border-radius: 0.5rem;
-            max-width: 500px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
-        .color-selector {
-            width: 64px;
-            height: 64px;
+        
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .animate-slide-up {
+            animation: slideUp 0.4s ease;
+        }
+        
+        .health-btn {
+            touch-action: manipulation;
+            user-select: none;
+            font-weight: 700;
+            font-size: 1.5rem;
+            border-radius: 16px;
+            transition: all 0.15s ease;
+        }
+        .health-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .match-card {
+            background: linear-gradient(135deg, rgba(26, 26, 46, 0.9) 0%, rgba(15, 15, 26, 0.9) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+        
+        .avatar-ring {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            padding: 3px;
             border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 3px solid transparent;
-            margin: 8px;
-            background-size: cover;
-            background-position: center;
         }
-        .color-selector:hover {
-            transform: scale(1.1);
-            border-color: rgba(255,255,255,0.5);
+        
+        .input-modern {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
         }
-        .color-selector.selected {
-            border-color: #60A5FA;
-            box-shadow: 0 0 12px rgba(96, 165, 250, 0.6);
-            transform: scale(1.05);
+        .input-modern:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+            outline: none;
         }
+        
+        .standing-row:nth-child(1) .rank-badge { background: linear-gradient(135deg, #FFD700, #FFA500); }
+        .standing-row:nth-child(2) .rank-badge { background: linear-gradient(135deg, #C0C0C0, #A8A8A8); }
+        .standing-row:nth-child(3) .rank-badge { background: linear-gradient(135deg, #CD7F32, #B87333); }
     </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen">
+<body>
     <!-- Join Tournament Screen -->
     <div id="join-screen" class="min-h-screen flex items-center justify-center p-6">
-        <div class="max-w-md w-full">
-            <h1 class="text-4xl font-bold text-center mb-8">Join Tournament</h1>
-            <div class="bg-gray-800 rounded-lg p-6 shadow-xl">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium mb-2">Your Name</label>
+        <div class="max-w-md w-full animate-slide-up">
+            <div class="text-center mb-8">
+                <h1 class="font-cinzel text-5xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent mb-2">
+                    MTG Tournament
+                </h1>
+                <p class="text-gray-400">Enter the arena</p>
+            </div>
+            
+            <div class="glass-card glow-border p-8">
+                <div class="mb-6">
+                    <label class="block text-sm font-medium mb-2 text-gray-300">Your Name</label>
                     <input type="text" id="player-name"
-                           class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           class="input-modern w-full px-4 py-4 rounded-xl text-white text-lg"
                            placeholder="Enter your name">
                 </div>
-                <div class="mb-6">
-                    <label class="block text-sm font-medium mb-3">Select Your Deck Colors</label>
-                    <div class="flex justify-center flex-wrap">
+                
+                <div class="mb-8">
+                    <label class="block text-sm font-medium mb-4 text-gray-300">Select Your Deck Colors</label>
+                    <div class="flex justify-center flex-wrap gap-3">
                         <div class="color-selector color-W" onclick="toggleColor('W')" data-color="W"></div>
                         <div class="color-selector color-U" onclick="toggleColor('U')" data-color="U"></div>
                         <div class="color-selector color-B" onclick="toggleColor('B')" data-color="B"></div>
                         <div class="color-selector color-R" onclick="toggleColor('R')" data-color="R"></div>
                         <div class="color-selector color-G" onclick="toggleColor('G')" data-color="G"></div>
                     </div>
-                    <p class="text-xs text-gray-400 text-center mt-2">Click to select your deck colors (W=White, U=Blue, B=Black, R=Red, G=Green)</p>
+                    <p class="text-xs text-gray-500 text-center mt-3">W=White, U=Blue, B=Black, R=Red, G=Green</p>
                 </div>
+                
                 <button onclick="joinTournament()"
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition">
-                    Join Tournament
+                        class="btn-primary w-full text-white font-bold py-4 rounded-xl text-lg">
+                    Enter Tournament
                 </button>
             </div>
         </div>
@@ -112,46 +250,48 @@
 
     <!-- Match List Screen -->
     <div id="matches-screen" class="hidden min-h-screen">
-        <header class="bg-gray-800 border-b border-gray-700 px-4 py-4">
+        <header class="glass-card mx-4 mt-4 px-5 py-4 rounded-2xl">
             <div class="flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center flex-shrink-0">
-                        <img id="player-avatar-display" src="" alt="Avatar" class="w-full h-full object-cover hidden">
-                        <span id="player-avatar-placeholder" class="text-2xl text-gray-500">👤</span>
+                <div class="flex items-center gap-4">
+                    <div class="avatar-ring">
+                        <div class="w-14 h-14 rounded-full overflow-hidden bg-gray-800 flex items-center justify-center">
+                            <img id="player-avatar-display" src="" alt="Avatar" class="w-full h-full object-cover hidden">
+                            <span id="player-avatar-placeholder" class="text-2xl">👤</span>
+                        </div>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold" id="player-name-header"></h1>
+                        <h1 class="text-xl font-bold" id="player-name-header"></h1>
                         <div class="flex items-center gap-2">
-                            <p class="text-sm text-gray-400" id="player-record">0-0</p>
-                            <div id="player-colors-display"></div>
+                            <span class="text-sm text-gray-400" id="player-record">0-0</span>
+                            <div id="player-colors-display" class="flex"></div>
                         </div>
                     </div>
                 </div>
                 <div class="flex gap-2">
                     <button onclick="openProfileSettings()" 
-                            class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm">
-                        ⚙️ Profile
+                            class="bg-gray-700/50 hover:bg-gray-600/50 px-4 py-2 rounded-xl text-sm transition">
+                        ⚙️
                     </button>
                     <button onclick="logout()" 
-                            class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm">
-                        Logout
+                            class="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-xl text-sm transition">
+                        ↩️
                     </button>
                 </div>
             </div>
         </header>
 
-        <main class="p-4">
+        <main class="p-4 max-w-2xl mx-auto">
             <!-- Current Match -->
-            <div id="current-match-section" class="hidden mb-6">
-                <h2 class="text-xl font-bold mb-3">Current Match</h2>
-                <div id="current-match" class="bg-gray-800 rounded-lg p-4 shadow-lg">
+            <div id="current-match-section" class="hidden mb-6 animate-slide-up">
+                <h2 class="font-cinzel text-xl font-bold mb-3 text-purple-300">⚔️ Current Match</h2>
+                <div id="current-match" class="match-card rounded-2xl p-5 glow-border">
                     <!-- Will be populated -->
                 </div>
             </div>
 
             <!-- Upcoming Matches -->
             <div class="mb-6">
-                <h2 class="text-xl font-bold mb-3">Upcoming Matches</h2>
+                <h2 class="font-cinzel text-xl font-bold mb-3 text-gray-300">📋 Upcoming Matches</h2>
                 <div id="upcoming-matches" class="space-y-3">
                     <!-- Will be populated -->
                 </div>
@@ -159,17 +299,17 @@
 
             <!-- Standings -->
             <div>
-                <h2 class="text-xl font-bold mb-3">Standings</h2>
-                <div class="bg-gray-800 rounded-lg overflow-hidden">
+                <h2 class="font-cinzel text-xl font-bold mb-3 text-amber-300">🏆 Standings</h2>
+                <div class="glass-card rounded-2xl overflow-hidden">
                     <table class="w-full text-sm">
-                        <thead class="bg-gray-700">
+                        <thead class="bg-black/30">
                             <tr>
-                                <th class="px-3 py-2 text-left">#</th>
-                                <th class="px-3 py-2 text-left">Player</th>
-                                <th class="px-3 py-2 text-center">W-L</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">#</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Player</th>
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-400 uppercase">W-L</th>
                             </tr>
                         </thead>
-                        <tbody id="standings-mobile" class="divide-y divide-gray-700">
+                        <tbody id="standings-mobile" class="divide-y divide-gray-800/50">
                             <!-- Will be populated -->
                         </tbody>
                     </table>
@@ -180,95 +320,116 @@
 
     <!-- In-Match Screen -->
     <div id="match-screen" class="hidden min-h-screen flex flex-col">
-        <header class="bg-gray-800 border-b border-gray-700 px-4 py-3 flex justify-between items-center">
-            <button onclick="exitMatch()" class="text-blue-400 hover:text-blue-300">
-                ← Back
+        <header class="glass-card mx-4 mt-4 px-5 py-4 rounded-2xl flex justify-between items-center">
+            <button onclick="exitMatch()" class="text-purple-400 hover:text-purple-300 font-medium flex items-center gap-2">
+                <span>←</span> <span>Back</span>
             </button>
             <div class="text-center">
-                <div class="text-sm text-gray-400">VS</div>
-                <div class="font-semibold" id="opponent-name">Opponent</div>
+                <div class="text-xs text-gray-500 uppercase tracking-wider">Opponent</div>
+                <div class="font-bold text-lg" id="opponent-name">Opponent</div>
             </div>
-            <div class="w-16"></div>
+            <div class="w-20"></div>
         </header>
 
         <main class="flex-1 flex flex-col items-center justify-center p-6">
-            <div class="text-center mb-8">
-                <div class="text-gray-400 text-sm mb-2">Your Health</div>
-                <div class="health-display font-bold" id="my-health">20</div>
+            <!-- Opponent Health -->
+            <div class="text-center mb-6 opacity-80">
+                <div class="text-gray-500 text-sm uppercase tracking-wider mb-1">Opponent's Life</div>
+                <div class="opponent-health text-red-400" id="opponent-health">20</div>
+                <div class="w-48 mx-auto mt-2">
+                    <div class="health-bar-container">
+                        <div id="opponent-health-bar" class="health-bar bg-red-500" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="w-full max-w-sm mb-6">
+                <div class="h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent"></div>
+            </div>
+
+            <!-- Your Health -->
+            <div class="text-center mb-10">
+                <div class="text-gray-400 text-sm uppercase tracking-wider mb-2">Your Life</div>
+                <div class="health-display text-purple-400" id="my-health">20</div>
+                <div class="w-64 mx-auto mt-4">
+                    <div class="health-bar-container h-4">
+                        <div id="my-health-bar" class="health-bar bg-purple-500" style="width: 100%"></div>
+                    </div>
+                </div>
             </div>
 
             <div class="grid grid-cols-2 gap-4 w-full max-w-sm mb-8">
                 <button onclick="adjustHealth(-5)"
-                        class="btn-health bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold py-6 rounded-lg text-2xl shadow-lg">
+                        class="health-btn bg-red-600 hover:bg-red-500 text-white py-6 shadow-lg shadow-red-500/30">
                     -5
                 </button>
                 <button onclick="adjustHealth(-1)"
-                        class="btn-health bg-red-500 hover:bg-red-600 active:bg-red-700 text-white font-bold py-6 rounded-lg text-2xl shadow-lg">
+                        class="health-btn bg-red-500/80 hover:bg-red-500 text-white py-6 shadow-lg shadow-red-500/20">
                     -1
                 </button>
                 <button onclick="adjustHealth(+1)"
-                        class="btn-health bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-bold py-6 rounded-lg text-2xl shadow-lg">
+                        class="health-btn bg-emerald-500/80 hover:bg-emerald-500 text-white py-6 shadow-lg shadow-emerald-500/20">
                     +1
                 </button>
                 <button onclick="adjustHealth(+5)"
-                        class="btn-health bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold py-6 rounded-lg text-2xl shadow-lg">
+                        class="health-btn bg-emerald-600 hover:bg-emerald-500 text-white py-6 shadow-lg shadow-emerald-500/30">
                     +5
                 </button>
             </div>
 
             <button id="defeat-btn" onclick="confirmDefeat()"
-                    class="hidden w-full max-w-sm bg-gray-700 hover:bg-gray-600 text-white font-bold py-4 rounded-lg">
-                Confirm Defeat (0 HP)
+                    class="hidden w-full max-w-sm btn-danger text-white font-bold py-4 rounded-xl animate-pulse">
+                ☠️ Confirm Defeat
             </button>
         </main>
     </div>
 
     <!-- Profile Settings Modal -->
     <div id="profile-modal" class="modal">
-        <div class="modal-content">
+        <div class="glass-card glow-border p-8 max-w-md w-11/12 mx-4 animate-slide-up">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold">Profile Settings</h2>
+                <h2 class="font-cinzel text-2xl font-bold">Profile Settings</h2>
                 <button onclick="closeProfileSettings()" class="text-gray-400 hover:text-white text-2xl">×</button>
             </div>
             
             <!-- Avatar Section -->
             <div class="mb-6">
-                <label class="block text-sm font-medium mb-3">Profile Picture</label>
+                <label class="block text-sm font-medium mb-3 text-gray-300">Profile Picture</label>
                 <div class="flex flex-col items-center gap-4">
-                    <div class="w-32 h-32 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center">
-                        <img id="avatar-preview" src="" alt="Avatar" class="w-full h-full object-cover hidden">
-                        <span id="avatar-placeholder" class="text-6xl text-gray-500">👤</span>
+                    <div class="avatar-ring">
+                        <div class="w-28 h-28 rounded-full overflow-hidden bg-gray-800 flex items-center justify-center">
+                            <img id="avatar-preview" src="" alt="Avatar" class="w-full h-full object-cover hidden">
+                            <span id="avatar-placeholder" class="text-5xl">👤</span>
+                        </div>
                     </div>
                     <div class="flex gap-2">
-                        <label class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg cursor-pointer text-sm">
-                            Upload Image
+                        <label class="btn-primary text-white px-4 py-2 rounded-xl cursor-pointer text-sm">
+                            Upload
                             <input type="file" id="avatar-upload" accept="image/*" class="hidden" onchange="previewAvatar(this)">
                         </label>
-                        <button onclick="removeAvatar()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm">
+                        <button onclick="removeAvatar()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-xl text-sm transition">
                             Remove
                         </button>
                     </div>
-                    <p class="text-xs text-gray-400 text-center">JPG, PNG, or GIF (max 5MB)</p>
                 </div>
             </div>
 
-            <div class="border-t border-gray-700 my-6"></div>
+            <div class="h-px bg-gray-700 my-6"></div>
             
             <!-- Colors Section -->
             <div class="mb-6">
-                <label class="block text-sm font-medium mb-3">Your Deck Colors</label>
-                <div class="flex justify-center flex-wrap gap-2">
+                <label class="block text-sm font-medium mb-4 text-gray-300">Deck Colors</label>
+                <div class="flex justify-center flex-wrap gap-3">
                     <div class="color-selector color-W" onclick="toggleColorInSettings('W')" data-color="W"></div>
                     <div class="color-selector color-U" onclick="toggleColorInSettings('U')" data-color="U"></div>
                     <div class="color-selector color-B" onclick="toggleColorInSettings('B')" data-color="B"></div>
                     <div class="color-selector color-R" onclick="toggleColorInSettings('R')" data-color="R"></div>
                     <div class="color-selector color-G" onclick="toggleColorInSettings('G')" data-color="G"></div>
                 </div>
-                <p class="text-xs text-gray-400 text-center mt-2">W=White, U=Blue, B=Black, R=Red, G=Green</p>
             </div>
 
             <button onclick="saveProfileSettings()" 
-                    class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg">
+                    class="btn-success w-full text-white font-bold py-4 rounded-xl">
                 Save Changes
             </button>
         </div>
@@ -280,19 +441,21 @@
         let currentPlayer = null;
         let currentMatch = null;
         let myHealth = 20;
+        let opponentHealth = 20;
         let matchWebSocket = null;
         let selectedColors = [];
+        let currentAvatarFile = null;
+        let shouldRemoveAvatar = false;
+        let pollInterval = null;
 
         function toggleColor(color) {
             const selector = document.querySelector(`.color-selector[data-color="${color}"]`);
             const index = selectedColors.indexOf(color);
             
             if (index > -1) {
-                // Remove color
                 selectedColors.splice(index, 1);
                 selector.classList.remove('selected');
             } else {
-                // Add color (max 5 colors)
                 if (selectedColors.length < 5) {
                     selectedColors.push(color);
                     selector.classList.add('selected');
@@ -308,7 +471,6 @@
             }
 
             try {
-                // Get current tournament
                 const tournamentResponse = await fetch(`${API_URL}/api/tournament/current`);
                 if (!tournamentResponse.ok) {
                     alert('No active tournament found. Please ask admin to create one.');
@@ -332,11 +494,9 @@
                 localStorage.setItem('playerId', currentPlayer.player_id);
                 localStorage.setItem('playerName', name);
 
-                // Update player profile with selected colors
                 if (selectedColors.length > 0) {
                     const formData = new FormData();
                     formData.append('colors', JSON.stringify(selectedColors));
-                    
                     await fetch(`${API_URL}/api/players/${currentPlayer.player_id}/profile`, {
                         method: 'PUT',
                         body: formData
@@ -355,14 +515,12 @@
             document.getElementById('matches-screen').classList.remove('hidden');
             document.getElementById('player-name-header').textContent = localStorage.getItem('playerName');
             
-            // Load and display player profile (colors and avatar)
             const playerId = localStorage.getItem('playerId');
             if (playerId) {
                 try {
                     const profileResponse = await fetch(`${API_URL}/api/players/${playerId}/profile`);
                     const profile = await profileResponse.json();
                     
-                    // Display colors
                     if (profile.colors && profile.colors.length > 0) {
                         const colorsHtml = profile.colors.map(c =>
                             `<span class="color-icon color-${c} w-6 h-6"></span>`
@@ -370,7 +528,6 @@
                         document.getElementById('player-colors-display').innerHTML = colorsHtml;
                     }
                     
-                    // Display avatar
                     const avatarDisplay = document.getElementById('player-avatar-display');
                     const avatarPlaceholder = document.getElementById('player-avatar-placeholder');
                     
@@ -399,53 +556,52 @@
                 const response = await fetch(`${API_URL}/api/players/${playerId}/matches`);
                 const data = await response.json();
 
-                // Update record
                 const profileResponse = await fetch(`${API_URL}/api/players/${playerId}/profile`);
                 const profile = await profileResponse.json();
                 document.getElementById('player-record').textContent = `${profile.wins}-${profile.losses}`;
 
-                // Current match
                 if (data.current_match) {
                     document.getElementById('current-match-section').classList.remove('hidden');
                     document.getElementById('current-match').innerHTML = `
                         <div class="flex justify-between items-center mb-4">
                             <div>
-                                <div class="text-sm text-gray-400">Round ${data.current_match.round_number}</div>
-                                <div class="font-semibold text-lg">${data.current_match.opponent.name}</div>
-                                <div class="flex mt-1">
+                                <div class="text-sm text-purple-400 font-medium">Round ${data.current_match.round_number}</div>
+                                <div class="font-bold text-xl mt-1">${data.current_match.opponent.name}</div>
+                                <div class="flex mt-2">
                                     ${(data.current_match.opponent.colors || []).map(c =>
-                                        `<span class="color-icon color-${c} w-6 h-6"></span>`
+                                        `<span class="color-icon color-${c} w-7 h-7"></span>`
                                     ).join('')}
                                 </div>
                             </div>
                             <div>
-                                <span class="px-3 py-1 rounded-full text-xs ${
-                                    data.current_match.status === 'in_progress' ? 'bg-green-600' : 'bg-gray-600'
+                                <span class="px-4 py-2 rounded-full text-xs font-medium ${
+                                    data.current_match.status === 'in_progress' 
+                                        ? 'bg-green-500/20 text-green-400' 
+                                        : 'bg-gray-600/50 text-gray-300'
                                 }">
-                                    ${data.current_match.status === 'in_progress' ? 'In Progress' : 'Pending'}
+                                    ${data.current_match.status === 'in_progress' ? '🟢 Live' : '⏳ Waiting'}
                                 </span>
                             </div>
                         </div>
                         <button onclick="joinMatch(${data.current_match.match_id})"
-                                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg">
-                            ${data.current_match.status === 'in_progress' ? 'Rejoin Match' : 'Start Match'}
+                                class="btn-primary w-full text-white font-bold py-4 rounded-xl text-lg">
+                            ${data.current_match.status === 'in_progress' ? '↩️ Rejoin Match' : '⚔️ Start Match'}
                         </button>
                     `;
                 } else {
                     document.getElementById('current-match-section').classList.add('hidden');
                 }
 
-                // Upcoming matches
                 const upcomingDiv = document.getElementById('upcoming-matches');
                 if (data.upcoming_matches.length > 0) {
                     upcomingDiv.innerHTML = data.upcoming_matches.map(m => `
-                        <div class="bg-gray-800 rounded-lg p-4">
-                            <div class="text-sm text-gray-400">Round ${m.round_number}</div>
-                            <div class="font-semibold">vs ${m.opponent}</div>
+                        <div class="glass-card rounded-xl p-4">
+                            <div class="text-sm text-gray-500">Round ${m.round_number}</div>
+                            <div class="font-semibold mt-1">vs ${m.opponent}</div>
                         </div>
                     `).join('');
                 } else {
-                    upcomingDiv.innerHTML = '<p class="text-gray-500 text-center py-4">No upcoming matches</p>';
+                    upcomingDiv.innerHTML = '<p class="text-gray-500 text-center py-6">No upcoming matches</p>';
                 }
             } catch (error) {
                 console.error('Error loading matches:', error);
@@ -458,12 +614,22 @@
                 const data = await response.json();
 
                 const tbody = document.getElementById('standings-mobile');
-                tbody.innerHTML = data.standings.slice(0, 10).map(player => `
-                    <tr class="${player.player_id == localStorage.getItem('playerId') ? 'bg-blue-900' : ''}">
-                        <td class="px-3 py-2">${player.rank}</td>
-                        <td class="px-3 py-2">${player.name}</td>
-                        <td class="px-3 py-2 text-center">
-                            <span class="text-green-400">${player.wins}</span>-<span class="text-red-400">${player.losses}</span>
+                tbody.innerHTML = data.standings.slice(0, 10).map((player, index) => `
+                    <tr class="standing-row ${player.player_id == localStorage.getItem('playerId') ? 'bg-purple-500/10' : ''} hover:bg-white/5 transition">
+                        <td class="px-4 py-3">
+                            <span class="rank-badge inline-flex items-center justify-center w-7 h-7 rounded-full ${
+                                index > 2 ? 'bg-gray-700' : ''
+                            } text-white text-xs font-bold">
+                                ${player.rank}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="font-medium">${player.name}</span>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <span class="text-green-400 font-medium">${player.wins}</span>
+                            <span class="text-gray-500">-</span>
+                            <span class="text-red-400 font-medium">${player.losses}</span>
                         </td>
                     </tr>
                 `).join('');
@@ -473,7 +639,6 @@
         }
 
         function connectMatchWebSocket(matchId) {
-            // Disconnect existing WebSocket if any
             if (matchWebSocket) {
                 matchWebSocket.close();
             }
@@ -491,7 +656,6 @@
             matchWebSocket.onmessage = (event) => {
                 const data = JSON.parse(event.data);
                 if (data.type === 'match_end') {
-                    // Match has ended, return to overview
                     alert('Match ended. Good game!');
                     exitMatch();
                 }
@@ -511,21 +675,59 @@
                 const data = await response.json();
                 currentMatch = matchId;
                 myHealth = data.your_health;
+                opponentHealth = data.opponent_health ?? 20;
 
                 document.getElementById('opponent-name').textContent = data.opponent_name;
-                document.getElementById('my-health').textContent = myHealth;
+                updateHealthDisplay();
 
                 document.getElementById('matches-screen').classList.add('hidden');
                 document.getElementById('match-screen').classList.remove('hidden');
 
-                // Connect to match WebSocket for real-time updates
                 connectMatchWebSocket(matchId);
+                startPollingMatchState();
 
                 updateDefeatButton();
             } catch (error) {
                 console.error('Error joining match:', error);
                 alert('Error joining match');
             }
+        }
+
+        function startPollingMatchState() {
+            if (pollInterval) clearInterval(pollInterval);
+            pollInterval = setInterval(async () => {
+                if (!currentMatch) return;
+                const playerId = localStorage.getItem('playerId');
+                try {
+                    const response = await fetch(`${API_URL}/api/matches/${currentMatch}/state?player_id=${playerId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        opponentHealth = data.opponent_health ?? opponentHealth;
+                        updateOpponentHealthDisplay();
+                        
+                        if (data.status === 'completed') {
+                            alert('Match ended!');
+                            exitMatch();
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error polling match state:', error);
+                }
+            }, 2000);
+        }
+
+        function updateHealthDisplay() {
+            document.getElementById('my-health').textContent = myHealth;
+            const myPercent = Math.max(0, (myHealth / 20) * 100);
+            document.getElementById('my-health-bar').style.width = myPercent + '%';
+            
+            updateOpponentHealthDisplay();
+        }
+
+        function updateOpponentHealthDisplay() {
+            document.getElementById('opponent-health').textContent = opponentHealth;
+            const oppPercent = Math.max(0, (opponentHealth / 20) * 100);
+            document.getElementById('opponent-health-bar').style.width = oppPercent + '%';
         }
 
         async function adjustHealth(change) {
@@ -543,8 +745,7 @@
 
                 const data = await response.json();
                 myHealth = data.new_health;
-                document.getElementById('my-health').textContent = myHealth;
-
+                updateHealthDisplay();
                 updateDefeatButton();
             } catch (error) {
                 console.error('Error updating health:', error);
@@ -555,8 +756,6 @@
             const btn = document.getElementById('defeat-btn');
             if (myHealth <= 0) {
                 btn.classList.remove('hidden');
-                btn.classList.remove('bg-gray-700', 'hover:bg-gray-600');
-                btn.classList.add('bg-red-600', 'hover:bg-red-700');
             } else {
                 btn.classList.add('hidden');
             }
@@ -583,14 +782,18 @@
         }
 
         function exitMatch() {
-            // Disconnect WebSocket
             if (matchWebSocket) {
                 matchWebSocket.close();
                 matchWebSocket = null;
             }
+            if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
+            }
 
             currentMatch = null;
             myHealth = 20;
+            opponentHealth = 20;
 
             document.getElementById('match-screen').classList.add('hidden');
             document.getElementById('matches-screen').classList.remove('hidden');
@@ -599,33 +802,20 @@
             loadStandings();
         }
 
-        // Auto-refresh matches
-        setInterval(() => {
-            if (!document.getElementById('matches-screen').classList.contains('hidden')) {
-                loadPlayerMatches();
-                loadStandings();
-            }
-        }, 3000);
-
-        let currentAvatarFile = null;
-        let shouldRemoveAvatar = false;
-
+        // Profile settings functions
         function openProfileSettings() {
             const playerId = localStorage.getItem('playerId');
             if (!playerId) return;
 
-            // Reset avatar state
             currentAvatarFile = null;
             shouldRemoveAvatar = false;
 
-            // Load current profile
             fetch(`${API_URL}/api/players/${playerId}/profile`)
                 .then(res => res.json())
                 .then(profile => {
                     selectedColors = profile.colors || [];
                     
-                    // Update color selectors
-                    document.querySelectorAll('.color-selector').forEach(selector => {
+                    document.querySelectorAll('#profile-modal .color-selector').forEach(selector => {
                         const color = selector.getAttribute('data-color');
                         if (selectedColors.includes(color)) {
                             selector.classList.add('selected');
@@ -634,7 +824,6 @@
                         }
                     });
                     
-                    // Update avatar preview
                     const avatarPreview = document.getElementById('avatar-preview');
                     const avatarPlaceholder = document.getElementById('avatar-placeholder');
                     
@@ -655,18 +844,33 @@
                 });
         }
 
+        function closeProfileSettings() {
+            document.getElementById('profile-modal').classList.remove('active');
+        }
+
+        function toggleColorInSettings(color) {
+            const selector = document.querySelector(`#profile-modal .color-selector[data-color="${color}"]`);
+            const index = selectedColors.indexOf(color);
+            
+            if (index > -1) {
+                selectedColors.splice(index, 1);
+                selector.classList.remove('selected');
+            } else {
+                if (selectedColors.length < 5) {
+                    selectedColors.push(color);
+                    selector.classList.add('selected');
+                }
+            }
+        }
+
         function previewAvatar(input) {
             if (input.files && input.files[0]) {
                 const file = input.files[0];
-                
-                // Validate file size (5MB max)
                 if (file.size > 5 * 1024 * 1024) {
                     alert('File size must be less than 5MB');
                     input.value = '';
                     return;
                 }
-                
-                // Validate file type
                 if (!file.type.startsWith('image/')) {
                     alert('Please select an image file');
                     input.value = '';
@@ -676,12 +880,10 @@
                 currentAvatarFile = file;
                 shouldRemoveAvatar = false;
                 
-                // Preview the image
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const avatarPreview = document.getElementById('avatar-preview');
                     const avatarPlaceholder = document.getElementById('avatar-placeholder');
-                    
                     avatarPreview.src = e.target.result;
                     avatarPreview.classList.remove('hidden');
                     avatarPlaceholder.classList.add('hidden');
@@ -703,27 +905,6 @@
             shouldRemoveAvatar = true;
         }
 
-        function closeProfileSettings() {
-            document.getElementById('profile-modal').classList.remove('active');
-        }
-
-        function toggleColorInSettings(color) {
-            const selector = document.querySelector(`.color-selector[data-color="${color}"]`);
-            const index = selectedColors.indexOf(color);
-            
-            if (index > -1) {
-                // Remove color
-                selectedColors.splice(index, 1);
-                selector.classList.remove('selected');
-            } else {
-                // Add color (max 5 colors)
-                if (selectedColors.length < 5) {
-                    selectedColors.push(color);
-                    selector.classList.add('selected');
-                }
-            }
-        }
-
         async function saveProfileSettings() {
             const playerId = localStorage.getItem('playerId');
             if (!playerId) return;
@@ -732,7 +913,6 @@
                 const formData = new FormData();
                 formData.append('colors', JSON.stringify(selectedColors));
                 
-                // Add avatar if selected
                 if (currentAvatarFile) {
                     formData.append('avatar', currentAvatarFile);
                 }
@@ -747,10 +927,8 @@
                     throw new Error(errorData.detail || 'Failed to update profile');
                 }
 
-                alert('Profile updated successfully!');
+                alert('Profile updated!');
                 closeProfileSettings();
-                
-                // Reload player display
                 showMatchesScreen();
             } catch (error) {
                 console.error('Error updating profile:', error);
@@ -758,7 +936,6 @@
             }
         }
 
-        // Close modal when clicking outside
         document.getElementById('profile-modal').addEventListener('click', (e) => {
             if (e.target.id === 'profile-modal') {
                 closeProfileSettings();
@@ -771,7 +948,6 @@
             location.reload();
         }
 
-        // Validate cached player still exists
         async function validatePlayer() {
             const playerId = localStorage.getItem('playerId');
             if (!playerId) return false;
@@ -781,28 +957,31 @@
                 if (response.ok) {
                     return true;
                 } else {
-                    // Player no longer exists, clear cache
-                    console.log('Cached player no longer exists, clearing...');
                     localStorage.removeItem('playerId');
                     localStorage.removeItem('playerName');
                     return false;
                 }
             } catch (error) {
-                console.error('Error validating player:', error);
                 return false;
             }
         }
+
+        // Auto-refresh
+        setInterval(() => {
+            if (!document.getElementById('matches-screen').classList.contains('hidden')) {
+                loadPlayerMatches();
+                loadStandings();
+            }
+        }, 3000);
 
         // Initialize
         window.onload = async () => {
             const playerId = localStorage.getItem('playerId');
             if (playerId) {
-                // Validate the player still exists
                 const isValid = await validatePlayer();
                 if (isValid) {
                     showMatchesScreen();
                 }
-                // If not valid, will show join screen (localStorage already cleared)
             }
         };
     </script>

@@ -4,21 +4,73 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Dashboard - MTG Tournament</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .health-bar {
-            transition: width 0.5s ease-in-out, background-color 0.3s;
+        :root {
+            --primary: #8B5CF6;
+            --primary-dark: #7C3AED;
+            --accent: #F59E0B;
+            --bg-dark: #0F0F1A;
+            --bg-card: #1A1A2E;
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --success: #10B981;
+            --danger: #EF4444;
         }
+        
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            background-image: 
+                radial-gradient(ellipse at top left, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom right, rgba(245, 158, 11, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at center, rgba(16, 185, 129, 0.05) 0%, transparent 70%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+        
+        .font-cinzel { font-family: 'Cinzel', serif; }
+        
+        .glass-card {
+            background: rgba(26, 26, 46, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+        }
+        
         .match-card {
-            transition: all 0.3s ease-in-out;
+            background: linear-gradient(145deg, rgba(26, 26, 46, 0.9) 0%, rgba(15, 15, 26, 0.95) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            border-radius: 20px;
+            transition: all 0.4s ease;
+            overflow: hidden;
         }
-        .pulse-animation {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        .match-card:hover {
+            border-color: rgba(139, 92, 246, 0.4);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(139, 92, 246, 0.1);
         }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: .7; }
+        .match-card.completed {
+            border-color: rgba(16, 185, 129, 0.3);
+            opacity: 0.85;
         }
+        
+        .health-bar-bg {
+            height: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .health-bar {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
+        }
+        
         .color-icon {
             width: 24px;
             height: 24px;
@@ -27,61 +79,153 @@
             margin: 0 2px;
             background-size: cover;
             background-position: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
         .color-W { background-image: url('assets/avatars/W.svg'); }
         .color-U { background-image: url('assets/avatars/U.svg'); }
         .color-B { background-image: url('assets/avatars/B.svg'); }
         .color-R { background-image: url('assets/avatars/R.svg'); }
         .color-G { background-image: url('assets/avatars/G.svg'); }
+        
+        .pulse-ring {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+        }
+        
+        .standing-row {
+            transition: all 0.3s ease;
+        }
+        .standing-row:hover {
+            background: rgba(139, 92, 246, 0.1);
+        }
+        
+        .rank-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .rank-1 { background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; }
+        .rank-2 { background: linear-gradient(135deg, #E8E8E8, #B8B8B8); color: #000; }
+        .rank-3 { background: linear-gradient(135deg, #CD7F32, #A0522D); color: #fff; }
+        .rank-default { background: rgba(255,255,255,0.1); }
+        
+        .vs-divider {
+            background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.5), transparent);
+            height: 2px;
+        }
+        
+        .live-badge {
+            background: linear-gradient(135deg, #10B981, #059669);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { box-shadow: 0 0 5px #10B981, 0 0 10px #10B981; }
+            to { box-shadow: 0 0 10px #10B981, 0 0 20px #10B981; }
+        }
+        
+        .header-glow {
+            box-shadow: 0 4px 30px rgba(139, 92, 246, 0.2);
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-in {
+            animation: slideIn 0.5s ease forwards;
+        }
+        
+        .player-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            text-transform: uppercase;
+        }
+        
+        .health-critical { animation: pulse 0.5s ease-in-out infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
     </style>
 </head>
-<body class="bg-gray-900 min-h-screen">
+<body>
     <!-- Header -->
-    <header class="bg-gray-800 border-b border-gray-700 px-6 py-4">
+    <header class="glass-card header-glow mx-4 mt-4 px-6 py-5">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div>
-                <h1 class="text-3xl font-bold text-white" id="tournament-name">MTG Tournament</h1>
-                <p class="text-gray-400 text-sm" id="tournament-info">Loading...</p>
+                <h1 class="font-cinzel text-3xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent" id="tournament-name">
+                    MTG Tournament
+                </h1>
+                <p class="text-gray-400 text-sm mt-1" id="tournament-info">Loading...</p>
             </div>
-            <div class="flex items-center space-x-4">
-                <div class="text-right">
-                    <div class="text-sm text-gray-400">Round</div>
-                    <div class="text-2xl font-bold text-blue-400" id="current-round">-</div>
+            <div class="flex items-center gap-6">
+                <div class="text-center">
+                    <div class="text-xs text-gray-500 uppercase tracking-wider">Round</div>
+                    <div class="text-3xl font-bold text-purple-400 font-cinzel" id="current-round">-</div>
                 </div>
-                <div class="w-3 h-3 rounded-full bg-green-500 pulse-animation" id="ws-status"></div>
+                <div class="flex items-center gap-2">
+                    <div id="ws-status" class="w-3 h-3 rounded-full bg-green-500 pulse-ring"></div>
+                    <span class="text-xs text-gray-500">LIVE</span>
+                </div>
             </div>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-6 py-8">
+    <main class="max-w-7xl mx-auto px-4 py-8">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Matches Grid (2 columns) -->
+            <!-- Matches Grid -->
             <div class="lg:col-span-2">
-                <h2 class="text-2xl font-bold mb-4 text-white">Current Matches</h2>
-                <div id="matches-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="font-cinzel text-2xl font-bold text-white flex items-center gap-3">
+                        <span class="text-3xl">⚔️</span> Current Matches
+                    </h2>
+                    <span class="live-badge px-3 py-1 rounded-full text-xs font-bold text-white">
+                        LIVE
+                    </span>
+                </div>
+                <div id="matches-grid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <!-- Matches will be inserted here -->
                 </div>
-                <div id="no-matches" class="hidden text-center py-12 text-gray-500">
-                    <p class="text-xl">No active matches</p>
-                    <p class="text-sm mt-2">Waiting for tournament to start...</p>
+                <div id="no-matches" class="hidden glass-card text-center py-16">
+                    <div class="text-6xl mb-4">🎴</div>
+                    <p class="text-xl text-gray-400">No active matches</p>
+                    <p class="text-sm text-gray-600 mt-2">Waiting for tournament to start...</p>
                 </div>
             </div>
 
             <!-- Standings Sidebar -->
             <div class="lg:col-span-1">
-                <h2 class="text-2xl font-bold mb-4 text-white">Standings</h2>
-                <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+                <h2 class="font-cinzel text-2xl font-bold text-white flex items-center gap-3 mb-6">
+                    <span class="text-3xl">🏆</span> Standings
+                </h2>
+                <div class="glass-card overflow-hidden">
                     <table class="w-full">
-                        <thead class="bg-gray-700">
-                            <tr>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Rank</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase">Player</th>
-                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-300 uppercase">W-L</th>
-                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-300 uppercase">Pts</th>
+                        <thead>
+                            <tr class="border-b border-gray-800">
+                                <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+                                <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Player</th>
+                                <th class="px-4 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
+                                <th class="px-4 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Pts</th>
                             </tr>
                         </thead>
-                        <tbody id="standings-body" class="divide-y divide-gray-700">
+                        <tbody id="standings-body" class="divide-y divide-gray-800/50">
                             <!-- Standings will be inserted here -->
                         </tbody>
                     </table>
@@ -96,13 +240,12 @@
         let ws = null;
         let tournamentId = 1;
 
-        // WebSocket connection
         function connectWebSocket() {
             ws = new WebSocket(`${WS_URL}/ws/dashboard`);
 
             ws.onopen = () => {
                 console.log('WebSocket connected');
-                document.getElementById('ws-status').className = 'w-3 h-3 rounded-full bg-green-500 pulse-animation';
+                document.getElementById('ws-status').className = 'w-3 h-3 rounded-full bg-green-500 pulse-ring';
             };
 
             ws.onclose = () => {
@@ -137,25 +280,29 @@
         function updatePlayerHealth(matchId, playerId, newHealth) {
             const healthBar = document.querySelector(`[data-match="${matchId}"][data-player="${playerId}"] .health-bar`);
             const healthText = document.querySelector(`[data-match="${matchId}"][data-player="${playerId}"] .health-text`);
+            const playerContainer = document.querySelector(`[data-match="${matchId}"][data-player="${playerId}"]`);
 
             if (healthBar && healthText) {
-                const percentage = (newHealth / 20) * 100;
+                const percentage = Math.max(0, (newHealth / 20) * 100);
                 healthBar.style.width = percentage + '%';
                 healthText.textContent = newHealth;
-
-                // Color based on health
                 healthBar.className = 'health-bar h-full rounded ' + getHealthColor(newHealth);
+                
+                if (newHealth <= 5 && newHealth > 0) {
+                    playerContainer?.classList.add('health-critical');
+                } else {
+                    playerContainer?.classList.remove('health-critical');
+                }
             }
         }
 
         function getHealthColor(health) {
-            if (health > 15) return 'bg-green-500';
-            if (health > 10) return 'bg-yellow-500';
-            if (health > 5) return 'bg-orange-500';
-            return 'bg-red-500';
+            if (health > 15) return 'bg-gradient-to-r from-green-500 to-emerald-400';
+            if (health > 10) return 'bg-gradient-to-r from-yellow-500 to-amber-400';
+            if (health > 5) return 'bg-gradient-to-r from-orange-500 to-red-400';
+            return 'bg-gradient-to-r from-red-600 to-red-500';
         }
 
-        // Load tournament info
         async function loadTournamentInfo() {
             try {
                 const response = await fetch(`${API_URL}/api/tournament/current`);
@@ -163,7 +310,7 @@
 
                 document.getElementById('tournament-name').textContent = data.name;
                 document.getElementById('tournament-info').textContent =
-                    `${data.status} • ${data.players_count} players`;
+                    `${data.status.charAt(0).toUpperCase() + data.status.slice(1)} • ${data.players_count} players`;
                 document.getElementById('current-round').textContent =
                     `${data.current_round}/${data.total_rounds}`;
 
@@ -173,7 +320,6 @@
             }
         }
 
-        // Load current round matches
         async function loadCurrentRound() {
             try {
                 const response = await fetch(`${API_URL}/api/tournament/${tournamentId}/current-round`);
@@ -189,56 +335,62 @@
                 }
 
                 noMatches.classList.add('hidden');
-                grid.innerHTML = data.matches.map(match => createMatchCard(match)).join('');
+                grid.innerHTML = data.matches.map((match, i) => createMatchCard(match, i)).join('');
             } catch (error) {
                 console.error('Error loading current round:', error);
             }
         }
 
-        // Create match card HTML
-        function createMatchCard(match) {
-            const status = match.status === 'completed' ? 'Completed' : 'In Progress';
-            const statusColor = match.status === 'completed' ? 'bg-gray-600' : 'bg-green-600';
+        function createMatchCard(match, index) {
+            const isCompleted = match.status === 'completed';
+            const statusClass = isCompleted ? 'completed' : '';
+            const statusBadge = isCompleted 
+                ? '<span class="px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400">✓ Complete</span>'
+                : '<span class="px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400">⚡ In Progress</span>';
 
             return `
-                <div class="match-card bg-gray-800 rounded-lg shadow-lg overflow-hidden border border-gray-700">
-                    <div class="px-4 py-2 ${statusColor} flex justify-between items-center">
-                        <span class="text-sm font-semibold">Match ${match.match_id}</span>
-                        <span class="text-xs">${status}</span>
+                <div class="match-card ${statusClass} animate-slide-in" style="animation-delay: ${index * 0.1}s">
+                    <div class="px-5 py-3 border-b border-gray-800/50 flex justify-between items-center">
+                        <span class="font-cinzel font-bold text-gray-400">Match ${match.match_id}</span>
+                        ${statusBadge}
                     </div>
-                    <div class="p-4">
-                        ${createPlayerDisplay(match.match_id, match.player1, 1)}
-                        <div class="text-center text-gray-500 font-bold my-2">VS</div>
-                        ${createPlayerDisplay(match.match_id, match.player2, 2)}
+                    <div class="p-5">
+                        ${createPlayerDisplay(match.match_id, match.player1)}
+                        <div class="my-4 flex items-center">
+                            <div class="flex-1 vs-divider"></div>
+                            <span class="px-4 text-gray-600 font-bold text-sm">VS</span>
+                            <div class="flex-1 vs-divider"></div>
+                        </div>
+                        ${createPlayerDisplay(match.match_id, match.player2)}
                     </div>
                 </div>
             `;
         }
 
-        function createPlayerDisplay(matchId, player, playerNum) {
-            // Use ?? instead of || so that 0 health shows as 0, not 20
+        function createPlayerDisplay(matchId, player) {
             const health = player.health ?? 20;
             const healthPercent = Math.max(0, (health / 20) * 100);
             const healthColor = getHealthColor(health);
             const colors = player.colors || [];
             const playerId = player.player_id;
+            const initial = player.name.charAt(0).toUpperCase();
 
             return `
-                <div class="mb-3" data-match="${matchId}" data-player="${playerId}">
-                    <div class="flex items-center mb-2">
-                        <div class="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center mr-3">
-                            <span class="text-lg font-bold">${player.name.charAt(0)}</span>
-                        </div>
-                        <div class="flex-1">
-                            <div class="font-semibold">${player.name}</div>
-                            <div class="flex space-x-1">
-                                ${colors.map(color => `<span class="color-icon color-${color}" title="${getColorName(color)}"></span>`).join('')}
-                            </div>
-                        </div>
-                        <div class="text-2xl font-bold health-text">${health}</div>
+                <div class="flex items-center gap-4" data-match="${matchId}" data-player="${playerId}">
+                    <div class="player-avatar flex-shrink-0">
+                        ${initial}
                     </div>
-                    <div class="w-full bg-gray-700 rounded-full h-3">
-                        <div class="health-bar ${healthColor} h-full rounded" style="width: ${healthPercent}%"></div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="font-semibold text-white truncate">${player.name}</div>
+                            <div class="text-2xl font-bold health-text ${health <= 5 ? 'text-red-400' : 'text-white'}">${health}</div>
+                        </div>
+                        <div class="health-bar-bg mb-2">
+                            <div class="health-bar ${healthColor}" style="width: ${healthPercent}%"></div>
+                        </div>
+                        <div class="flex gap-1">
+                            ${colors.map(color => `<span class="color-icon color-${color} w-5 h-5" title="${getColorName(color)}"></span>`).join('')}
+                        </div>
                     </div>
                 </div>
             `;
@@ -249,45 +401,44 @@
             return names[color] || color;
         }
 
-        // Load standings
         async function loadStandings() {
             try {
                 const response = await fetch(`${API_URL}/api/tournament/${tournamentId}/standings`);
                 const data = await response.json();
 
                 const tbody = document.getElementById('standings-body');
-                tbody.innerHTML = data.standings.map(player => `
-                    <tr class="hover:bg-gray-700">
-                        <td class="px-4 py-3">
-                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full ${
-                                player.rank === 1 ? 'bg-yellow-500' :
-                                player.rank === 2 ? 'bg-gray-400' :
-                                player.rank === 3 ? 'bg-orange-600' :
-                                'bg-gray-700'
-                            } text-white font-bold text-sm">
-                                ${player.rank}
-                            </span>
-                        </td>
-                        <td class="px-4 py-3">
-                            <div class="font-medium">${player.name}</div>
-                            <div class="flex space-x-1 mt-1">
-                                ${(player.colors || []).map(color =>
-                                    `<span class="color-icon color-${color} w-4 h-4"></span>`
-                                ).join('')}
-                            </div>
-                        </td>
-                        <td class="px-4 py-3 text-center">
-                            <span class="text-green-400">${player.wins}</span>-<span class="text-red-400">${player.losses}</span>
-                        </td>
-                        <td class="px-4 py-3 text-center font-bold">${player.points}</td>
-                    </tr>
-                `).join('');
+                tbody.innerHTML = data.standings.map((player, index) => {
+                    const rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : 'rank-default';
+                    
+                    return `
+                        <tr class="standing-row">
+                            <td class="px-4 py-4">
+                                <span class="rank-badge ${rankClass}">${player.rank}</span>
+                            </td>
+                            <td class="px-4 py-4">
+                                <div class="font-medium text-white">${player.name}</div>
+                                <div class="flex gap-1 mt-1">
+                                    ${(player.colors || []).map(color =>
+                                        `<span class="color-icon color-${color} w-4 h-4"></span>`
+                                    ).join('')}
+                                </div>
+                            </td>
+                            <td class="px-4 py-4 text-center">
+                                <span class="text-green-400 font-semibold">${player.wins}</span>
+                                <span class="text-gray-600 mx-1">-</span>
+                                <span class="text-red-400 font-semibold">${player.losses}</span>
+                            </td>
+                            <td class="px-4 py-4 text-center">
+                                <span class="font-bold text-amber-400">${player.points}</span>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
             } catch (error) {
                 console.error('Error loading standings:', error);
             }
         }
 
-        // Auto-refresh (every 2 seconds as backup to WebSocket)
         function startAutoRefresh() {
             setInterval(() => {
                 loadCurrentRound();
@@ -295,7 +446,6 @@
             }, 2000);
         }
 
-        // Initialize
         async function init() {
             await loadTournamentInfo();
             await loadCurrentRound();
@@ -304,7 +454,6 @@
             startAutoRefresh();
         }
 
-        // Start when page loads
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init);
         } else {

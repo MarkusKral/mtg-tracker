@@ -8,6 +8,35 @@ from services.match_service import MatchService
 router = APIRouter(prefix="/api/matches", tags=["matches"])
 
 
+@router.get("/{match_id}/state")
+def get_match_state(
+    match_id: int,
+    player_id: int,
+    db: Session = Depends(get_db)
+):
+    """Get current match state for a player."""
+    match = db.query(Match).filter(Match.id == match_id).first()
+    if not match:
+        raise HTTPException(status_code=404, detail="Match not found")
+
+    if player_id not in [match.player1_id, match.player2_id]:
+        raise HTTPException(status_code=400, detail="Player not in this match")
+
+    opponent_id = match.player2_id if match.player1_id == player_id else match.player1_id
+    opponent = db.query(Player).filter(Player.id == opponent_id).first()
+
+    your_health = match.player1_health if match.player1_id == player_id else match.player2_health
+    opponent_health = match.player2_health if match.player1_id == player_id else match.player1_health
+
+    return {
+        "match_id": match.id,
+        "your_health": your_health,
+        "opponent_health": opponent_health,
+        "opponent_name": opponent.name,
+        "status": match.status
+    }
+
+
 @router.post("/{match_id}/join", response_model=MatchResponse)
 def join_match(
     match_id: int,
@@ -34,10 +63,12 @@ def join_match(
         opponent = db.query(Player).filter(Player.id == opponent_id).first()
 
         your_health = updated_match.player1_health if updated_match.player1_id == join_data.player_id else updated_match.player2_health
+        opponent_health = updated_match.player2_health if updated_match.player1_id == join_data.player_id else updated_match.player1_health
 
         return {
             "match_id": updated_match.id,
             "your_health": your_health,
+            "opponent_health": opponent_health,
             "opponent_name": opponent.name,
             "status": updated_match.status
         }

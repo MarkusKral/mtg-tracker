@@ -4,45 +4,197 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MTG Tournament Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary: #8B5CF6;
+            --accent: #F59E0B;
+            --bg-dark: #0F0F1A;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            background-image: 
+                radial-gradient(ellipse at top, rgba(139, 92, 246, 0.2) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom right, rgba(245, 158, 11, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom left, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .font-cinzel { font-family: 'Cinzel', serif; }
+        
+        .card-link {
+            background: rgba(26, 26, 46, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+        
+        .card-link:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .card-link:hover {
+            transform: translateY(-8px);
+            border-color: rgba(139, 92, 246, 0.4);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 40px rgba(139, 92, 246, 0.1);
+        }
+        
+        .icon-container {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin: 0 auto 1.5rem;
+            transition: all 0.4s ease;
+        }
+        
+        .card-link:hover .icon-container {
+            transform: scale(1.1);
+        }
+        
+        .dashboard-icon { background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.3)); }
+        .player-icon { background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(52, 211, 153, 0.3)); }
+        .admin-icon { background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(245, 158, 11, 0.3)); }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .title-shimmer {
+            background: linear-gradient(90deg, 
+                #a78bfa 0%, 
+                #f472b6 25%, 
+                #fbbf24 50%, 
+                #f472b6 75%, 
+                #a78bfa 100%
+            );
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: shimmer 4s linear infinite;
+        }
+        
+        .mana-symbol {
+            width: 32px;
+            height: 32px;
+            display: inline-block;
+            background-size: cover;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .mana-W { background-image: url('assets/avatars/W.svg'); animation-delay: 0s; }
+        .mana-U { background-image: url('assets/avatars/U.svg'); animation-delay: 0.5s; }
+        .mana-B { background-image: url('assets/avatars/B.svg'); animation-delay: 1s; }
+        .mana-R { background-image: url('assets/avatars/R.svg'); animation-delay: 1.5s; }
+        .mana-G { background-image: url('assets/avatars/G.svg'); animation-delay: 2s; }
+        
+        .api-link {
+            color: #94a3b8;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid transparent;
+        }
+        .api-link:hover {
+            color: #a78bfa;
+            border-bottom-color: #a78bfa;
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen">
-    <div class="min-h-screen flex items-center justify-center p-6">
-        <div class="max-w-2xl w-full">
-            <div class="text-center mb-12">
-                <h1 class="text-5xl font-bold mb-4">MTG Tournament Tracker</h1>
-                <p class="text-gray-400 text-lg">Choose your interface</p>
-            </div>
+<body class="text-white min-h-screen flex items-center justify-center p-6">
+    <div class="max-w-4xl w-full">
+        <!-- Mana Symbols -->
+        <div class="flex justify-center gap-4 mb-6">
+            <span class="mana-symbol mana-W"></span>
+            <span class="mana-symbol mana-U"></span>
+            <span class="mana-symbol mana-B"></span>
+            <span class="mana-symbol mana-R"></span>
+            <span class="mana-symbol mana-G"></span>
+        </div>
+        
+        <!-- Title -->
+        <div class="text-center mb-16">
+            <h1 class="font-cinzel text-5xl md:text-6xl font-bold title-shimmer mb-4">
+                MTG Tournament
+            </h1>
+            <p class="text-gray-400 text-lg">Track your draft tournaments in style</p>
+        </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Live Dashboard -->
-                <a href="dashboard.html" class="bg-gray-800 hover:bg-gray-700 rounded-lg p-8 text-center transition shadow-lg">
-                    <div class="text-4xl mb-4">📺</div>
-                    <h2 class="text-xl font-bold mb-2">Live Dashboard</h2>
-                    <p class="text-gray-400 text-sm">Desktop view for spectators</p>
-                </a>
+        <!-- Navigation Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Live Dashboard -->
+            <a href="dashboard.html" class="card-link rounded-2xl p-8 text-center block">
+                <div class="icon-container dashboard-icon float-animation">
+                    📺
+                </div>
+                <h2 class="font-cinzel text-xl font-bold mb-3 text-white">Live Dashboard</h2>
+                <p class="text-gray-400 text-sm leading-relaxed">
+                    Real-time match tracking and standings for spectators
+                </p>
+            </a>
 
-                <!-- Player Interface -->
-                <a href="player.html" class="bg-gray-800 hover:bg-gray-700 rounded-lg p-8 text-center transition shadow-lg">
-                    <div class="text-4xl mb-4">📱</div>
-                    <h2 class="text-xl font-bold mb-2">Player</h2>
-                    <p class="text-gray-400 text-sm">Mobile interface for players</p>
-                </a>
+            <!-- Player Interface -->
+            <a href="player.html" class="card-link rounded-2xl p-8 text-center block" style="animation-delay: 0.1s;">
+                <div class="icon-container player-icon float-animation" style="animation-delay: 1s;">
+                    📱
+                </div>
+                <h2 class="font-cinzel text-xl font-bold mb-3 text-white">Player</h2>
+                <p class="text-gray-400 text-sm leading-relaxed">
+                    Mobile-friendly interface to track your health and matches
+                </p>
+            </a>
 
-                <!-- Admin Panel -->
-                <a href="admin.html" class="bg-gray-800 hover:bg-gray-700 rounded-lg p-8 text-center transition shadow-lg">
-                    <div class="text-4xl mb-4">⚙️</div>
-                    <h2 class="text-xl font-bold mb-2">Admin</h2>
-                    <p class="text-gray-400 text-sm">Manage tournaments</p>
-                </a>
-            </div>
+            <!-- Admin Panel -->
+            <a href="admin.html" class="card-link rounded-2xl p-8 text-center block" style="animation-delay: 0.2s;">
+                <div class="icon-container admin-icon float-animation" style="animation-delay: 2s;">
+                    ⚙️
+                </div>
+                <h2 class="font-cinzel text-xl font-bold mb-3 text-white">Admin</h2>
+                <p class="text-gray-400 text-sm leading-relaxed">
+                    Create and manage tournaments, control rounds
+                </p>
+            </a>
+        </div>
 
-            <div class="mt-12 text-center">
-                <p class="text-gray-500 text-sm mb-4">Backend API</p>
-                <a href="http://localhost:8000/docs" target="_blank"
-                   class="text-blue-400 hover:text-blue-300 text-sm">
-                    View API Documentation →
+        <!-- Footer -->
+        <div class="mt-16 text-center">
+            <div class="inline-flex items-center gap-4 text-sm">
+                <a href="http://localhost:8000/docs" target="_blank" class="api-link">
+                    API Documentation
                 </a>
+                <span class="text-gray-700">•</span>
+                <span class="text-gray-600">v1.0</span>
             </div>
         </div>
     </div>

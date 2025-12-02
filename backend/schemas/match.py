@@ -18,6 +18,7 @@ class MatchDefeat(BaseModel):
 class MatchResponse(BaseModel):
     match_id: int
     your_health: Optional[int]
+    opponent_health: Optional[int]
     opponent_name: str
     status: str
 
