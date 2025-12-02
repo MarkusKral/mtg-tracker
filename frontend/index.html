@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTG Tournament Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <div class="min-h-screen flex items-center justify-center p-6">
+        <div class="max-w-2xl w-full">
+            <div class="text-center mb-12">
+                <h1 class="text-5xl font-bold mb-4">MTG Tournament Tracker</h1>
+                <p class="text-gray-400 text-lg">Choose your interface</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Live Dashboard -->
+                <a href="dashboard.html" class="bg-gray-800 hover:bg-gray-700 rounded-lg p-8 text-center transition shadow-lg">
+                    <div class="text-4xl mb-4">📺</div>
+                    <h2 class="text-xl font-bold mb-2">Live Dashboard</h2>
+                    <p class="text-gray-400 text-sm">Desktop view for spectators</p>
+                </a>
+
+                <!-- Player Interface -->
+                <a href="player.html" class="bg-gray-800 hover:bg-gray-700 rounded-lg p-8 text-center transition shadow-lg">
+                    <div class="text-4xl mb-4">📱</div>
+                    <h2 class="text-xl font-bold mb-2">Player</h2>
+                    <p class="text-gray-400 text-sm">Mobile interface for players</p>
+                </a>
+
+                <!-- Admin Panel -->
+                <a href="admin.html" class="bg-gray-800 hover:bg-gray-700 rounded-lg p-8 text-center transition shadow-lg">
+                    <div class="text-4xl mb-4">⚙️</div>
+                    <h2 class="text-xl font-bold mb-2">Admin</h2>
+                    <p class="text-gray-400 text-sm">Manage tournaments</p>
+                </a>
+            </div>
+
+            <div class="mt-12 text-center">
+                <p class="text-gray-500 text-sm mb-4">Backend API</p>
+                <a href="http://localhost:8000/docs" target="_blank"
+                   class="text-blue-400 hover:text-blue-300 text-sm">
+                    View API Documentation →
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
