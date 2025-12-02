@@ -45,7 +45,7 @@
             background: linear-gradient(145deg, rgba(26, 26, 46, 0.9) 0%, rgba(15, 15, 26, 0.95) 100%);
             border: 1px solid rgba(139, 92, 246, 0.15);
             border-radius: 20px;
-            transition: all 0.4s ease;
+            transition: border-color 0.4s ease, box-shadow 0.4s ease, transform 0.4s ease, opacity 0.4s ease;
             overflow: hidden;
         }
         .match-card:hover {
@@ -135,18 +135,18 @@
             box-shadow: 0 4px 30px rgba(139, 92, 246, 0.2);
         }
         
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-slide-in {
-            animation: slideIn 0.5s ease forwards;
-        }
-        
         .player-avatar {
             width: 48px;
             height: 48px;
             border-radius: 50%;
+            flex-shrink: 0;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .player-avatar-bg {
+            width: 100%;
+            height: 100%;
             background: linear-gradient(135deg, var(--primary), var(--accent));
             display: flex;
             align-items: center;
@@ -155,6 +155,12 @@
             font-weight: 700;
             color: white;
             text-transform: uppercase;
+        }
+        
+        .player-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         
         .health-critical { animation: pulse 0.5s ease-in-out infinite; }
@@ -239,6 +245,8 @@
         const WS_URL = 'ws://localhost:8000';
         let ws = null;
         let tournamentId = 1;
+        let currentMatchIds = new Set(); // Track existing matches to avoid re-rendering
+        let isFirstLoad = true;
 
         function connectWebSocket() {
             ws = new WebSocket(`${WS_URL}/ws/dashboard`);
@@ -266,11 +274,12 @@
                     updatePlayerHealth(data.match_id, data.player_id, data.new_health);
                     break;
                 case 'match_complete':
-                    loadCurrentRound();
+                    updateMatchStatus(data.match_id, 'completed');
                     loadStandings();
                     break;
                 case 'round_complete':
                     loadTournamentInfo();
+                    isFirstLoad = true; // Allow animation for new round
                     loadCurrentRound();
                     loadStandings();
                     break;
@@ -278,20 +287,45 @@
         }
 
         function updatePlayerHealth(matchId, playerId, newHealth) {
-            const healthBar = document.querySelector(`[data-match="${matchId}"][data-player="${playerId}"] .health-bar`);
-            const healthText = document.querySelector(`[data-match="${matchId}"][data-player="${playerId}"] .health-text`);
             const playerContainer = document.querySelector(`[data-match="${matchId}"][data-player="${playerId}"]`);
+            if (!playerContainer) return;
+            
+            const healthBar = playerContainer.querySelector('.health-bar');
+            const healthText = playerContainer.querySelector('.health-text');
 
             if (healthBar && healthText) {
                 const percentage = Math.max(0, (newHealth / 20) * 100);
                 healthBar.style.width = percentage + '%';
                 healthText.textContent = newHealth;
-                healthBar.className = 'health-bar h-full rounded ' + getHealthColor(newHealth);
+                healthBar.className = 'health-bar ' + getHealthColor(newHealth);
+                
+                // Update text color
+                if (newHealth <= 5) {
+                    healthText.classList.add('text-red-400');
+                    healthText.classList.remove('text-white');
+                } else {
+                    healthText.classList.remove('text-red-400');
+                    healthText.classList.add('text-white');
+                }
                 
                 if (newHealth <= 5 && newHealth > 0) {
-                    playerContainer?.classList.add('health-critical');
+                    playerContainer.classList.add('health-critical');
                 } else {
-                    playerContainer?.classList.remove('health-critical');
+                    playerContainer.classList.remove('health-critical');
+                }
+            }
+        }
+
+        function updateMatchStatus(matchId, status) {
+            const matchCard = document.querySelector(`[data-match-card="${matchId}"]`);
+            if (matchCard) {
+                if (status === 'completed') {
+                    matchCard.classList.add('completed');
+                    const badge = matchCard.querySelector('.status-badge');
+                    if (badge) {
+                        badge.className = 'status-badge px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400';
+                        badge.textContent = '✓ Complete';
+                    }
                 }
             }
         }
@@ -331,25 +365,49 @@
                 if (!data.matches || data.matches.length === 0) {
                     grid.innerHTML = '';
                     noMatches.classList.remove('hidden');
+                    currentMatchIds.clear();
                     return;
                 }
 
                 noMatches.classList.add('hidden');
-                grid.innerHTML = data.matches.map((match, i) => createMatchCard(match, i)).join('');
+
+                // Check if we need a full refresh (different matches)
+                const newMatchIds = new Set(data.matches.map(m => m.match_id));
+                const needsFullRefresh = isFirstLoad || 
+                    newMatchIds.size !== currentMatchIds.size ||
+                    ![...newMatchIds].every(id => currentMatchIds.has(id));
+
+                if (needsFullRefresh) {
+                    // Full render with animation only on first load
+                    grid.innerHTML = data.matches.map((match, i) => 
+                        createMatchCard(match, isFirstLoad ? i : -1)
+                    ).join('');
+                    currentMatchIds = newMatchIds;
+                    isFirstLoad = false;
+                } else {
+                    // Update existing cards in place
+                    data.matches.forEach(match => {
+                        updateMatchCard(match);
+                    });
+                }
             } catch (error) {
                 console.error('Error loading current round:', error);
             }
         }
 
-        function createMatchCard(match, index) {
+        function createMatchCard(match, animationIndex) {
             const isCompleted = match.status === 'completed';
             const statusClass = isCompleted ? 'completed' : '';
             const statusBadge = isCompleted 
-                ? '<span class="px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400">✓ Complete</span>'
-                : '<span class="px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400">⚡ In Progress</span>';
+                ? '<span class="status-badge px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400">✓ Complete</span>'
+                : '<span class="status-badge px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400">⚡ In Progress</span>';
+            
+            const animationStyle = animationIndex >= 0 
+                ? `opacity: 0; animation: fadeSlideIn 0.5s ease forwards; animation-delay: ${animationIndex * 0.1}s;` 
+                : '';
 
             return `
-                <div class="match-card ${statusClass} animate-slide-in" style="animation-delay: ${index * 0.1}s">
+                <div class="match-card ${statusClass}" data-match-card="${match.match_id}" style="${animationStyle}">
                     <div class="px-5 py-3 border-b border-gray-800/50 flex justify-between items-center">
                         <span class="font-cinzel font-bold text-gray-400">Match ${match.match_id}</span>
                         ${statusBadge}
@@ -367,6 +425,49 @@
             `;
         }
 
+        function updateMatchCard(match) {
+            // Update player 1
+            updatePlayerInCard(match.match_id, match.player1);
+            // Update player 2
+            updatePlayerInCard(match.match_id, match.player2);
+            // Update match status
+            updateMatchStatus(match.match_id, match.status);
+        }
+
+        function updatePlayerInCard(matchId, player) {
+            const playerContainer = document.querySelector(`[data-match="${matchId}"][data-player="${player.player_id}"]`);
+            if (!playerContainer) return;
+
+            const health = player.health ?? 20;
+            const healthPercent = Math.max(0, (health / 20) * 100);
+            const healthColor = getHealthColor(health);
+
+            const healthBar = playerContainer.querySelector('.health-bar');
+            const healthText = playerContainer.querySelector('.health-text');
+
+            if (healthBar) {
+                healthBar.style.width = healthPercent + '%';
+                healthBar.className = 'health-bar ' + healthColor;
+            }
+
+            if (healthText) {
+                healthText.textContent = health;
+                if (health <= 5) {
+                    healthText.classList.add('text-red-400');
+                    healthText.classList.remove('text-white');
+                } else {
+                    healthText.classList.remove('text-red-400');
+                    healthText.classList.add('text-white');
+                }
+            }
+
+            if (health <= 5 && health > 0) {
+                playerContainer.classList.add('health-critical');
+            } else {
+                playerContainer.classList.remove('health-critical');
+            }
+        }
+
         function createPlayerDisplay(matchId, player) {
             const health = player.health ?? 20;
             const healthPercent = Math.max(0, (health / 20) * 100);
@@ -374,11 +475,16 @@
             const colors = player.colors || [];
             const playerId = player.player_id;
             const initial = player.name.charAt(0).toUpperCase();
+            const avatarUrl = player.avatar_url;
+
+            const avatarContent = avatarUrl 
+                ? `<img src="${API_URL}${avatarUrl}" alt="${player.name}" onerror="this.parentElement.innerHTML='<div class=\\'player-avatar-bg\\'>${initial}</div>'">`
+                : `<div class="player-avatar-bg">${initial}</div>`;
 
             return `
                 <div class="flex items-center gap-4" data-match="${matchId}" data-player="${playerId}">
-                    <div class="player-avatar flex-shrink-0">
-                        ${initial}
+                    <div class="player-avatar">
+                        ${avatarContent}
                     </div>
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center justify-between mb-2">
@@ -445,6 +551,16 @@
                 loadStandings();
             }, 2000);
         }
+
+        // Add the CSS animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeSlideIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(style);
 
         async function init() {
             await loadTournamentInfo();
