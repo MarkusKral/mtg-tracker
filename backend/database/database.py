@@ -30,26 +30,29 @@ def init_db():
 
 
 def init_admin_user():
-    """Initialize admin user if it doesn't exist."""
+    """Initialize or update admin user with password from environment."""
     from models import AdminConfig
     from services.auth import get_password_hash
     
     db = SessionLocal()
     try:
+        default_password = os.getenv("ADMIN_PASSWORD", "admin")
+        password_hash = get_password_hash(default_password)
+        
         admin = db.query(AdminConfig).filter(AdminConfig.id == 1).first()
         
         if not admin:
-            default_password = os.getenv("ADMIN_PASSWORD", "admin123")
-            password_hash = get_password_hash(default_password)
-            
             admin = AdminConfig(
                 id=1,
                 password_hash=password_hash
             )
             db.add(admin)
             db.commit()
-            print("Admin user created with password: " + default_password)
+            print(f"Admin user created with password from ADMIN_PASSWORD env var")
         else:
-            print("Admin user already exists")
+            # Always update password to match environment variable
+            admin.password_hash = password_hash
+            db.commit()
+            print(f"Admin password updated from ADMIN_PASSWORD env var")
     finally:
         db.close()
