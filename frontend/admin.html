@@ -4,155 +4,181 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - MTG Tournament</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
-            --primary: #8B5CF6;
-            --primary-dark: #7C3AED;
-            --accent: #F59E0B;
-            --bg-dark: #0F0F1A;
-            --bg-card: #1A1A2E;
-            --text-primary: #F8FAFC;
-            --text-secondary: #94A3B8;
-            --success: #10B981;
+            --bg-primary: #FAF9F6;
+            --bg-secondary: #F5F3EF;
+            --bg-card: #FFFFFF;
+            --text-primary: #2D2A26;
+            --text-secondary: #6B6560;
+            --text-muted: #9CA3AF;
+            --border: #E5E2DC;
+            --accent-gold: #B8860B;
+            --accent-burgundy: #722F37;
+            --success: #166534;
+            --danger: #991B1B;
+        }
+        
+        [data-theme="dark"] {
+            --bg-primary: #1A1A1A;
+            --bg-secondary: #242424;
+            --bg-card: #2D2D2D;
+            --text-primary: #F5F5F5;
+            --text-secondary: #A0A0A0;
+            --text-muted: #6B6B6B;
+            --border: #404040;
+            --accent-gold: #D4A84B;
+            --accent-burgundy: #C45A5A;
+            --success: #22C55E;
             --danger: #EF4444;
         }
         
         * { box-sizing: border-box; }
         
         body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-dark);
-            background-image: 
-                radial-gradient(ellipse at top right, rgba(239, 68, 68, 0.1) 0%, transparent 50%),
-                radial-gradient(ellipse at bottom left, rgba(139, 92, 246, 0.15) 0%, transparent 50%);
+            font-family: 'Source Sans 3', sans-serif;
+            background: var(--bg-primary);
             min-height: 100vh;
             color: var(--text-primary);
+            transition: background 0.3s ease, color 0.3s ease;
         }
         
-        .font-cinzel { font-family: 'Cinzel', serif; }
+        .font-display { font-family: 'Playfair Display', serif; }
         
-        .glass-card {
-            background: rgba(26, 26, 46, 0.8);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
         
-        .glow-border {
-            box-shadow: 0 0 30px rgba(139, 92, 246, 0.2);
+        [data-theme="dark"] .card {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            transition: all 0.2s ease;
         }
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(139, 92, 246, 0.5);
+            opacity: 0.9;
         }
         
-        .btn-success {
-            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+            transition: all 0.2s ease;
         }
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(16, 185, 129, 0.5);
-        }
-        
-        .btn-warning {
-            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+        .btn-secondary:hover {
+            background: var(--border);
         }
         
         .btn-danger {
-            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
-            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+            background: rgba(153, 27, 27, 0.1);
+            color: var(--accent-burgundy);
+            border: 1px solid rgba(153, 27, 27, 0.2);
+            transition: all 0.2s ease;
         }
         .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(239, 68, 68, 0.5);
+            background: rgba(153, 27, 27, 0.2);
         }
         
-        .input-modern {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
+        [data-theme="dark"] .btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.2);
         }
-        .input-modern:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+        [data-theme="dark"] .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+        
+        .btn-warning {
+            background: rgba(184, 134, 11, 0.1);
+            color: var(--accent-gold);
+            border: 1px solid rgba(184, 134, 11, 0.2);
+        }
+        .btn-warning:hover {
+            background: rgba(184, 134, 11, 0.2);
+        }
+        
+        .input-field {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+        }
+        .input-field:focus {
+            border-color: var(--text-primary);
             outline: none;
         }
         
-        .match-card {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            transition: all 0.3s ease;
+        .match-item {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            transition: background 0.2s ease;
         }
-        .match-card:hover {
-            border-color: rgba(139, 92, 246, 0.3);
-        }
-        
-        .stat-card {
-            background: linear-gradient(145deg, rgba(26, 26, 46, 0.9) 0%, rgba(15, 15, 26, 0.95) 100%);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+        .match-item:hover {
+            background: var(--border);
         }
         
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-slide-in {
-            animation: slideIn 0.4s ease forwards;
+        .stat-box {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1rem;
         }
         
         .status-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
+            padding: 4px 10px;
+            border-radius: 6px;
             font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            font-weight: 500;
         }
-        .status-registration { background: rgba(59, 130, 246, 0.2); color: #60A5FA; }
-        .status-in_progress { background: rgba(16, 185, 129, 0.2); color: #34D399; }
-        .status-completed { background: rgba(107, 114, 128, 0.2); color: #9CA3AF; }
+        .status-registration { background: #DBEAFE; color: #1D4ED8; }
+        .status-in_progress { background: #D1FAE5; color: #059669; }
+        .status-completed { background: var(--bg-secondary); color: var(--text-secondary); }
         
-        .tournament-history-item {
-            transition: all 0.3s ease;
+        [data-theme="dark"] .status-registration { background: #1E3A5F; color: #60A5FA; }
+        [data-theme="dark"] .status-in_progress { background: #14532D; color: #4ADE80; }
+        
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
         }
-        .tournament-history-item:hover {
-            background: rgba(139, 92, 246, 0.1);
+        .theme-toggle:hover {
+            border-color: var(--text-secondary);
         }
     </style>
 </head>
 <body>
     <!-- Login Screen -->
     <div id="login-screen" class="min-h-screen flex items-center justify-center p-6">
-        <div class="max-w-md w-full animate-slide-in">
+        <button onclick="toggleTheme()" class="theme-toggle fixed top-4 right-4 px-3 py-2 rounded-lg text-sm">
+            <span id="theme-icon">🌙</span>
+        </button>
+        
+        <div class="max-w-md w-full">
             <div class="text-center mb-8">
-                <h1 class="font-cinzel text-5xl font-bold bg-gradient-to-r from-red-400 via-purple-400 to-amber-400 bg-clip-text text-transparent mb-2">
-                    Admin Panel
-                </h1>
-                <p class="text-gray-400">Tournament Management</p>
+                <h1 class="font-display text-4xl font-bold mb-2">Administration</h1>
+                <p style="color: var(--text-secondary)">Tournament Management</p>
             </div>
             
-            <div class="glass-card glow-border p-8">
+            <div class="card p-8">
                 <div class="mb-6">
-                    <label class="block text-sm font-medium mb-2 text-gray-300">Admin Password</label>
+                    <label class="block text-sm font-medium mb-2" style="color: var(--text-secondary)">Password</label>
                     <input type="password" id="admin-password"
-                           class="input-modern w-full px-4 py-4 rounded-xl text-white text-lg"
-                           placeholder="Enter password"
+                           class="input-field w-full px-4 py-3 rounded-lg text-lg"
+                           placeholder="Enter admin password"
                            onkeypress="if(event.key === 'Enter') adminLogin()">
                 </div>
                 <button onclick="adminLogin()"
-                        class="btn-primary w-full text-white font-bold py-4 rounded-xl text-lg">
-                    🔐 Login
+                        class="btn-primary w-full font-semibold py-3 rounded-lg">
+                    Login
                 </button>
             </div>
         </div>
@@ -160,111 +186,97 @@
 
     <!-- Admin Panel -->
     <div id="admin-panel" class="hidden">
-        <header class="glass-card mx-4 mt-4 px-6 py-5">
-            <div class="flex justify-between items-center">
+        <header style="background: var(--bg-card); border-bottom: 1px solid var(--border);" class="px-6 py-4">
+            <div class="max-w-5xl mx-auto flex justify-between items-center">
                 <div>
-                    <h1 class="font-cinzel text-2xl font-bold text-white">🎮 Tournament Control</h1>
-                    <p class="text-gray-400 text-sm mt-1">Manage your MTG tournaments</p>
+                    <h1 class="font-display text-xl font-bold">Tournament Admin</h1>
                 </div>
-                <button onclick="logout()" class="btn-danger text-white px-5 py-2 rounded-xl font-medium">
-                    Logout
-                </button>
+                <div class="flex gap-3">
+                    <button onclick="toggleTheme()" class="theme-toggle px-3 py-2 rounded-lg text-sm">
+                        <span id="theme-icon-header">🌙</span>
+                    </button>
+                    <button onclick="logout()" class="text-sm" style="color: var(--text-muted)">
+                        Logout
+                    </button>
+                </div>
             </div>
         </header>
 
-        <main class="max-w-6xl mx-auto px-4 py-8">
+        <main class="max-w-5xl mx-auto px-6 py-8">
             <!-- Create Tournament -->
-            <div class="glass-card p-6 mb-6 animate-slide-in">
-                <h2 class="font-cinzel text-xl font-bold mb-6 flex items-center gap-3">
-                    <span class="text-2xl">✨</span> Create New Tournament
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+            <div class="card p-6 mb-6">
+                <h2 class="font-display text-lg font-semibold mb-5">Create New Tournament</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
                     <div>
-                        <label class="block text-sm mb-2 text-gray-400">Tournament Name</label>
+                        <label class="block text-sm mb-2" style="color: var(--text-secondary)">Tournament Name</label>
                         <input type="text" id="tournament-name"
-                               class="input-modern w-full px-4 py-3 rounded-xl text-white"
+                               class="input-field w-full px-4 py-2.5 rounded-lg"
                                placeholder="Friday Night Draft">
                     </div>
                     <div>
-                        <label class="block text-sm mb-2 text-gray-400">Draft Type</label>
-                        <input type="text" id="draft-type"
-                               class="input-modern w-full px-4 py-3 rounded-xl text-white"
-                               placeholder="Booster Draft">
-                    </div>
-                    <div>
-                        <label class="block text-sm mb-2 text-gray-400">Max Players</label>
+                        <label class="block text-sm mb-2" style="color: var(--text-secondary)">Max Players</label>
                         <input type="number" id="max-players" value="8" min="2" max="20"
-                               class="input-modern w-full px-4 py-3 rounded-xl text-white">
+                               class="input-field w-full px-4 py-2.5 rounded-lg">
                     </div>
                     <div>
-                        <label class="block text-sm mb-2 text-gray-400">Starting Life</label>
+                        <label class="block text-sm mb-2" style="color: var(--text-secondary)">Starting Life</label>
                         <input type="number" id="starting-life" value="20" min="1"
-                               class="input-modern w-full px-4 py-3 rounded-xl text-white">
+                               class="input-field w-full px-4 py-2.5 rounded-lg">
                     </div>
                 </div>
                 <button onclick="createTournament()"
-                        class="btn-success text-white font-bold px-8 py-3 rounded-xl">
-                    🚀 Create Tournament
+                        class="btn-primary font-medium px-6 py-2.5 rounded-lg">
+                    Create Tournament
                 </button>
             </div>
 
             <!-- Current Tournament -->
             <div id="tournament-section" class="hidden">
                 <!-- Tournament Info -->
-                <div class="glass-card p-6 mb-6 animate-slide-in">
-                    <div class="flex justify-between items-start mb-6">
-                        <div>
-                            <h2 class="font-cinzel text-xl font-bold flex items-center gap-3">
-                                <span class="text-2xl">🏟️</span> Current Tournament
-                            </h2>
-                        </div>
+                <div class="card p-6 mb-6">
+                    <div class="flex justify-between items-start mb-5">
+                        <h2 class="font-display text-lg font-semibold">Current Tournament</h2>
                         <button onclick="deleteTournament()" 
-                                class="btn-danger text-white px-4 py-2 rounded-xl text-sm font-medium">
-                            🗑️ Delete
+                                class="btn-danger px-3 py-1.5 rounded-lg text-sm font-medium">
+                            Delete
                         </button>
                     </div>
                     
-                    <div id="tournament-info" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div id="tournament-info" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
                         <!-- Info will be populated -->
                     </div>
 
                     <div class="flex flex-wrap gap-3">
                         <button id="generate-schedule-btn" onclick="generateSchedule()"
-                                class="btn-primary text-white font-bold px-6 py-3 rounded-xl">
-                            📋 Generate Schedule
+                                class="btn-primary font-medium px-5 py-2.5 rounded-lg">
+                            Generate Schedule
                         </button>
                         <button id="next-round-btn" onclick="nextRound()" class="hidden
-                                btn-warning text-white font-bold px-6 py-3 rounded-xl">
-                            ⏭️ Next Round
+                                btn-warning font-medium px-5 py-2.5 rounded-lg">
+                            Advance Round
                         </button>
                     </div>
                 </div>
 
                 <!-- Players List -->
-                <div class="glass-card p-6 mb-6">
-                    <h2 class="font-cinzel text-xl font-bold mb-4 flex items-center gap-3">
-                        <span class="text-2xl">👥</span> Registered Players
-                    </h2>
-                    <div id="players-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div class="card p-6 mb-6">
+                    <h2 class="font-display text-lg font-semibold mb-4">Registered Players</h2>
+                    <div id="players-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                         <!-- Players will be populated -->
                     </div>
                 </div>
 
                 <!-- Current Matches -->
-                <div class="glass-card p-6 mb-6">
-                    <h2 class="font-cinzel text-xl font-bold mb-4 flex items-center gap-3">
-                        <span class="text-2xl">⚔️</span> Current Matches
-                    </h2>
-                    <div id="admin-matches" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="card p-6 mb-6">
+                    <h2 class="font-display text-lg font-semibold mb-4">Current Matches</h2>
+                    <div id="admin-matches" class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <!-- Matches will be populated -->
                     </div>
                 </div>
 
                 <!-- Tournament History -->
-                <div class="glass-card p-6">
-                    <h2 class="font-cinzel text-xl font-bold mb-4 flex items-center gap-3">
-                        <span class="text-2xl">📜</span> All Tournaments
-                    </h2>
+                <div class="card p-6">
+                    <h2 class="font-display text-lg font-semibold mb-4">All Tournaments</h2>
                     <div id="tournament-history" class="space-y-2">
                         <!-- Tournament history will be populated -->
                     </div>
@@ -277,6 +289,27 @@
         const API_URL = 'http://localhost:8000';
         let adminToken = null;
         let currentTournament = null;
+
+        // Theme
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcons(newTheme);
+        }
+        
+        function updateThemeIcons(theme) {
+            const icon = theme === 'dark' ? '☀️' : '🌙';
+            document.getElementById('theme-icon').textContent = icon;
+            const headerIcon = document.getElementById('theme-icon-header');
+            if (headerIcon) headerIcon.textContent = icon;
+        }
+        
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcons(savedTheme);
 
         async function adminLogin() {
             const password = document.getElementById('admin-password').value;
@@ -319,16 +352,11 @@
 
         async function createTournament() {
             const name = document.getElementById('tournament-name').value.trim();
-            const draftType = document.getElementById('draft-type').value.trim();
             const maxPlayers = parseInt(document.getElementById('max-players').value);
             const startingLife = parseInt(document.getElementById('starting-life').value);
 
             if (!name) {
                 alert('Please enter a tournament name');
-                return;
-            }
-            if (!draftType) {
-                alert('Please enter a draft type');
                 return;
             }
 
@@ -341,10 +369,7 @@
                     },
                     body: JSON.stringify({
                         name,
-                        draft_type: draftType,
-                        tournament_type: "Round Robin",
                         max_players: maxPlayers,
-                        match_format: "Best of 1",
                         starting_life: startingLife
                     })
                 });
@@ -354,7 +379,6 @@
                     throw new Error(errorData.detail || 'Failed to create tournament');
                 }
 
-                alert('Tournament created successfully!');
                 loadCurrentTournament();
             } catch (error) {
                 console.error('Error creating tournament:', error);
@@ -372,21 +396,21 @@
 
                 const statusClass = `status-${data.status}`;
                 document.getElementById('tournament-info').innerHTML = `
-                    <div class="stat-card rounded-xl p-4">
-                        <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Name</div>
-                        <div class="font-bold text-lg">${data.name}</div>
+                    <div class="stat-box">
+                        <div class="text-xs uppercase tracking-wider mb-1" style="color: var(--text-muted)">Name</div>
+                        <div class="font-semibold">${data.name}</div>
                     </div>
-                    <div class="stat-card rounded-xl p-4">
-                        <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Status</div>
+                    <div class="stat-box">
+                        <div class="text-xs uppercase tracking-wider mb-1" style="color: var(--text-muted)">Status</div>
                         <div><span class="status-badge ${statusClass}">${data.status}</span></div>
                     </div>
-                    <div class="stat-card rounded-xl p-4">
-                        <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Players</div>
-                        <div class="font-bold text-lg text-purple-400">${data.players_count}</div>
+                    <div class="stat-box">
+                        <div class="text-xs uppercase tracking-wider mb-1" style="color: var(--text-muted)">Players</div>
+                        <div class="font-semibold">${data.players_count}</div>
                     </div>
-                    <div class="stat-card rounded-xl p-4">
-                        <div class="text-xs text-gray-500 uppercase tracking-wider mb-1">Round</div>
-                        <div class="font-bold text-lg text-amber-400">${data.current_round}/${data.total_rounds || '?'}</div>
+                    <div class="stat-box">
+                        <div class="text-xs uppercase tracking-wider mb-1" style="color: var(--text-muted)">Round</div>
+                        <div class="font-semibold">${data.current_round}/${data.total_rounds || '?'}</div>
                     </div>
                 `;
 
@@ -416,17 +440,15 @@
 
                 const playersDiv = document.getElementById('players-list');
                 if (data.standings.length === 0) {
-                    playersDiv.innerHTML = '<p class="text-gray-500 col-span-full text-center py-4">No players registered yet</p>';
+                    playersDiv.innerHTML = `<p style="color: var(--text-muted)" class="col-span-full text-center py-4">No players registered yet</p>`;
                     return;
                 }
                 
                 playersDiv.innerHTML = data.standings.map(p => `
-                    <div class="match-card px-4 py-3 flex justify-between items-center">
+                    <div class="match-item px-3 py-2 flex justify-between items-center">
                         <span class="font-medium">${p.name}</span>
-                        <span class="text-sm">
-                            <span class="text-green-400">${p.wins}</span>
-                            <span class="text-gray-600">-</span>
-                            <span class="text-red-400">${p.losses}</span>
+                        <span class="text-sm" style="color: var(--text-secondary)">
+                            <span style="color: var(--success)">${p.wins}</span>-<span style="color: var(--danger)">${p.losses}</span>
                         </span>
                     </div>
                 `).join('');
@@ -443,14 +465,14 @@
                 const matchesDiv = document.getElementById('admin-matches');
 
                 if (!data.matches || data.matches.length === 0) {
-                    matchesDiv.innerHTML = '<p class="text-gray-500 col-span-full text-center py-4">No active matches</p>';
+                    matchesDiv.innerHTML = `<p style="color: var(--text-muted)" class="col-span-full text-center py-4">No active matches</p>`;
                     return;
                 }
 
                 matchesDiv.innerHTML = data.matches.map(m => `
-                    <div class="match-card p-4">
-                        <div class="flex justify-between items-center mb-3">
-                            <span class="font-bold text-gray-400">Match ${m.match_id}</span>
+                    <div class="match-item p-3">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm" style="color: var(--text-secondary)">Match ${m.match_id}</span>
                             <span class="status-badge ${m.status === 'completed' ? 'status-completed' : 'status-in_progress'}">
                                 ${m.status}
                             </span>
@@ -458,20 +480,14 @@
                         <div class="flex items-center justify-between text-sm">
                             <div class="flex-1">
                                 <div class="font-medium">${m.player1.name}</div>
-                                <div class="text-2xl font-bold ${(m.player1.health ?? 20) <= 5 ? 'text-red-400' : 'text-purple-400'}">${m.player1.health ?? 20}</div>
+                                <div class="text-lg font-bold" style="color: ${(m.player1.health ?? 20) <= 5 ? 'var(--danger)' : 'inherit'}">${m.player1.health ?? 20}</div>
                             </div>
-                            <div class="px-4 text-gray-600 font-bold">VS</div>
+                            <div class="px-3 text-xs" style="color: var(--text-muted)">VS</div>
                             <div class="flex-1 text-right">
                                 <div class="font-medium">${m.player2.name}</div>
-                                <div class="text-2xl font-bold ${(m.player2.health ?? 20) <= 5 ? 'text-red-400' : 'text-purple-400'}">${m.player2.health ?? 20}</div>
+                                <div class="text-lg font-bold" style="color: ${(m.player2.health ?? 20) <= 5 ? 'var(--danger)' : 'inherit'}">${m.player2.health ?? 20}</div>
                             </div>
                         </div>
-                        ${m.status !== 'completed' ? `
-                            <button onclick="forceEndMatch(${m.match_id})"
-                                    class="mt-3 w-full text-red-400 hover:text-red-300 text-sm py-2 border border-red-500/30 rounded-lg hover:bg-red-500/10 transition">
-                                Force End Match
-                            </button>
-                        ` : ''}
                     </div>
                 `).join('');
             } catch (error) {
@@ -489,21 +505,21 @@
                 const historyDiv = document.getElementById('tournament-history');
                 
                 if (!data.tournaments || data.tournaments.length === 0) {
-                    historyDiv.innerHTML = '<p class="text-gray-500 text-center py-4">No tournaments yet</p>';
+                    historyDiv.innerHTML = `<p style="color: var(--text-muted)" class="text-center py-4">No tournaments yet</p>`;
                     return;
                 }
 
                 historyDiv.innerHTML = data.tournaments.map(t => `
-                    <div class="tournament-history-item flex justify-between items-center px-4 py-3 rounded-xl">
+                    <div class="match-item flex justify-between items-center px-4 py-3">
                         <div>
-                            <div class="font-semibold">${t.name}</div>
-                            <div class="text-sm text-gray-500">
+                            <div class="font-medium">${t.name}</div>
+                            <div class="text-sm" style="color: var(--text-secondary)">
                                 <span class="status-badge status-${t.status}">${t.status}</span>
                                 <span class="ml-2">${t.players_count} players</span>
                             </div>
                         </div>
                         <button onclick="deleteSpecificTournament(${t.id}, '${t.name.replace(/'/g, "\\'")}')"
-                                class="text-red-400 hover:text-red-300 text-sm px-4 py-2 border border-red-500/30 rounded-lg hover:bg-red-500/10 transition">
+                                class="btn-danger px-3 py-1.5 rounded-lg text-sm">
                             Delete
                         </button>
                     </div>
@@ -528,7 +544,7 @@
                 if (!response.ok) throw new Error('Failed to generate schedule');
 
                 const data = await response.json();
-                alert(`Schedule generated!\n${data.rounds_created} rounds\n${data.total_matches} matches`);
+                alert(`Schedule generated: ${data.rounds_created} rounds, ${data.total_matches} matches`);
                 loadCurrentTournament();
             } catch (error) {
                 console.error('Error generating schedule:', error);
@@ -548,8 +564,6 @@
 
                 if (!response.ok) throw new Error('Failed to advance round');
 
-                const data = await response.json();
-                alert(`Advanced to round ${data.current_round}`);
                 loadCurrentTournament();
             } catch (error) {
                 console.error('Error advancing round:', error);
@@ -557,28 +571,10 @@
             }
         }
 
-        async function forceEndMatch(matchId) {
-            if (!confirm('Force end this match?')) return;
-
-            try {
-                await fetch(`${API_URL}/api/admin/match/${matchId}/force-end`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${adminToken}` }
-                });
-
-                alert('Match ended');
-                loadCurrentMatches();
-            } catch (error) {
-                console.error('Error ending match:', error);
-                alert('Error ending match');
-            }
-        }
-
         async function deleteTournament() {
             if (!currentTournament) return;
 
-            if (!confirm(`Delete tournament "${currentTournament.name}"?\n\nThis will permanently delete all data.`)) return;
-            if (!confirm('Are you SURE? This cannot be undone!')) return;
+            if (!confirm(`Delete tournament "${currentTournament.name}"?`)) return;
 
             try {
                 const response = await fetch(
@@ -591,7 +587,6 @@
 
                 if (!response.ok) throw new Error('Failed to delete');
 
-                alert('Tournament deleted');
                 currentTournament = null;
                 document.getElementById('tournament-section').classList.add('hidden');
                 loadCurrentTournament();
@@ -615,8 +610,6 @@
 
                 if (!response.ok) throw new Error('Failed to delete');
 
-                alert('Tournament deleted');
-                
                 if (currentTournament && currentTournament.tournament_id === tournamentId) {
                     currentTournament = null;
                     document.getElementById('tournament-section').classList.add('hidden');
@@ -630,14 +623,12 @@
             }
         }
 
-        // Auto-refresh
         setInterval(() => {
             if (!document.getElementById('admin-panel').classList.contains('hidden') && currentTournament) {
                 loadCurrentTournament();
             }
         }, 5000);
 
-        // Initialize
         window.onload = () => {
             const token = localStorage.getItem('adminToken');
             if (token) {

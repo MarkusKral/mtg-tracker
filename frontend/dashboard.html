@@ -4,63 +4,91 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Dashboard - MTG Tournament</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
-            --primary: #8B5CF6;
-            --primary-dark: #7C3AED;
-            --accent: #F59E0B;
-            --bg-dark: #0F0F1A;
-            --bg-card: #1A1A2E;
-            --text-primary: #F8FAFC;
-            --text-secondary: #94A3B8;
-            --success: #10B981;
+            --bg-primary: #FAF9F6;
+            --bg-secondary: #F5F3EF;
+            --bg-card: #FFFFFF;
+            --text-primary: #2D2A26;
+            --text-secondary: #6B6560;
+            --text-muted: #9CA3AF;
+            --border: #E5E2DC;
+            --accent-gold: #B8860B;
+            --accent-burgundy: #722F37;
+            --success: #166534;
+            --danger: #991B1B;
+            --winner-glow: rgba(184, 134, 11, 0.3);
+            --winner-border: #D4A84B;
+        }
+        
+        [data-theme="dark"] {
+            --bg-primary: #1A1A1A;
+            --bg-secondary: #242424;
+            --bg-card: #2D2D2D;
+            --text-primary: #F5F5F5;
+            --text-secondary: #A0A0A0;
+            --text-muted: #6B6B6B;
+            --border: #404040;
+            --accent-gold: #D4A84B;
+            --accent-burgundy: #C45A5A;
+            --success: #22C55E;
             --danger: #EF4444;
+            --winner-glow: rgba(212, 168, 75, 0.4);
+            --winner-border: #D4A84B;
         }
         
         * { box-sizing: border-box; }
         
         body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-dark);
-            background-image: 
-                radial-gradient(ellipse at top left, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
-                radial-gradient(ellipse at bottom right, rgba(245, 158, 11, 0.1) 0%, transparent 50%),
-                radial-gradient(ellipse at center, rgba(16, 185, 129, 0.05) 0%, transparent 70%);
+            font-family: 'Source Sans 3', sans-serif;
+            background: var(--bg-primary);
             min-height: 100vh;
             color: var(--text-primary);
+            transition: background 0.3s ease, color 0.3s ease;
         }
         
-        .font-cinzel { font-family: 'Cinzel', serif; }
+        .font-display { font-family: 'Playfair Display', serif; }
         
-        .glass-card {
-            background: rgba(26, 26, 46, 0.8);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 20px;
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+        
+        [data-theme="dark"] .card {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
         
         .match-card {
-            background: linear-gradient(145deg, rgba(26, 26, 46, 0.9) 0%, rgba(15, 15, 26, 0.95) 100%);
-            border: 1px solid rgba(139, 92, 246, 0.15);
-            border-radius: 20px;
-            transition: border-color 0.4s ease, box-shadow 0.4s ease, transform 0.4s ease, opacity 0.4s ease;
-            overflow: hidden;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
         .match-card:hover {
-            border-color: rgba(139, 92, 246, 0.4);
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 30px rgba(139, 92, 246, 0.1);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
         }
         .match-card.completed {
-            border-color: rgba(16, 185, 129, 0.3);
-            opacity: 0.85;
+            background: var(--bg-secondary);
+            opacity: 0.8;
+        }
+        
+        [data-theme="dark"] .match-card {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        [data-theme="dark"] .match-card:hover {
+            box-shadow: 0 12px 32px rgba(0,0,0,0.4);
         }
         
         .health-bar-bg {
             height: 10px;
-            background: rgba(0, 0, 0, 0.5);
+            background: var(--bg-secondary);
             border-radius: 5px;
             overflow: hidden;
         }
@@ -68,18 +96,21 @@
         .health-bar {
             height: 100%;
             border-radius: 5px;
-            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease;
+            transition: width 0.6s ease;
         }
+        .health-bar.healthy { background: var(--success); }
+        .health-bar.warning { background: var(--accent-gold); }
+        .health-bar.danger { background: var(--accent-burgundy); }
         
         .color-icon {
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             display: inline-block;
-            margin: 0 2px;
+            margin: 0 3px;
             background-size: cover;
             background-position: center;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
         }
         .color-W { background-image: url('assets/avatars/W.svg'); }
         .color-U { background-image: url('assets/avatars/U.svg'); }
@@ -87,74 +118,61 @@
         .color-R { background-image: url('assets/avatars/R.svg'); }
         .color-G { background-image: url('assets/avatars/G.svg'); }
         
-        .pulse-ring {
-            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
         }
-        @keyframes pulse-ring {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-            50% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-        }
+        .status-dot.live { background: #16A34A; }
+        .status-dot.offline { background: #DC2626; }
         
         .standing-row {
-            transition: all 0.3s ease;
+            transition: background 0.2s ease;
         }
         .standing-row:hover {
-            background: rgba(139, 92, 246, 0.1);
+            background: var(--bg-secondary);
         }
         
         .rank-badge {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 14px;
+            font-size: 16px;
         }
-        .rank-1 { background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; }
-        .rank-2 { background: linear-gradient(135deg, #E8E8E8, #B8B8B8); color: #000; }
-        .rank-3 { background: linear-gradient(135deg, #CD7F32, #A0522D); color: #fff; }
-        .rank-default { background: rgba(255,255,255,0.1); }
+        .rank-1 { background: #FEF3C7; color: #92400E; }
+        .rank-2 { background: #F3F4F6; color: #6B7280; }
+        .rank-3 { background: #FED7AA; color: #9A3412; }
+        .rank-default { background: var(--bg-secondary); color: var(--text-secondary); }
         
-        .vs-divider {
-            background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.5), transparent);
-            height: 2px;
-        }
-        
-        .live-badge {
-            background: linear-gradient(135deg, #10B981, #059669);
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-        @keyframes glow {
-            from { box-shadow: 0 0 5px #10B981, 0 0 10px #10B981; }
-            to { box-shadow: 0 0 10px #10B981, 0 0 20px #10B981; }
-        }
-        
-        .header-glow {
-            box-shadow: 0 4px 30px rgba(139, 92, 246, 0.2);
-        }
+        [data-theme="dark"] .rank-1 { background: #78350F; color: #FDE68A; }
+        [data-theme="dark"] .rank-2 { background: #374151; color: #D1D5DB; }
+        [data-theme="dark"] .rank-3 { background: #7C2D12; color: #FED7AA; }
         
         .player-avatar {
-            width: 48px;
-            height: 48px;
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
             flex-shrink: 0;
             overflow: hidden;
-            position: relative;
+            background: var(--bg-secondary);
+            border: 3px solid var(--border);
+            transition: all 0.3s ease;
         }
         
-        .player-avatar-bg {
+        .player-avatar-initial {
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
             font-weight: 700;
-            color: white;
-            text-transform: uppercase;
+            color: var(--text-secondary);
+            font-size: 22px;
         }
         
         .player-avatar img {
@@ -163,77 +181,308 @@
             object-fit: cover;
         }
         
-        .health-critical { animation: pulse 0.5s ease-in-out infinite; }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+        .theme-toggle:hover {
+            border-color: var(--text-secondary);
+        }
+        
+        .pairing-row {
+            display: flex;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .pairing-row:last-child {
+            border-bottom: none;
+        }
+        
+        .health-number {
+            font-size: 2rem;
+            font-weight: 700;
+            font-family: 'Playfair Display', serif;
+            line-height: 1;
+        }
+        
+        /* Winner highlight */
+        .player-winner {
+            background: linear-gradient(135deg, rgba(184, 134, 11, 0.1) 0%, rgba(212, 168, 75, 0.15) 100%);
+            border-radius: 12px;
+            padding: 12px;
+            margin: -12px;
+            position: relative;
+        }
+        
+        .player-winner::before {
+            content: '👑';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            font-size: 24px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+        
+        .player-winner .player-avatar {
+            border-color: var(--winner-border);
+            box-shadow: 0 0 20px var(--winner-glow);
+        }
+        
+        .player-winner .health-number {
+            color: var(--accent-gold);
+        }
+        
+        /* Position change arrows */
+        .position-change {
+            display: inline-flex;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .position-up {
+            color: var(--success);
+        }
+        .position-down {
+            color: var(--danger);
+        }
+        
+        /* Final Results Podium */
+        .podium-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 2rem;
+            padding: 2rem 0;
+        }
+        
+        .podium-place {
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        .podium-place:hover {
+            transform: translateY(-8px);
+        }
+        
+        .podium-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 700;
+        }
+        
+        .podium-1 .podium-avatar {
+            width: 100px;
+            height: 100px;
+            font-size: 40px;
+            border: 4px solid #FFD700;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+            background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+        }
+        .podium-2 .podium-avatar {
+            border: 4px solid #C0C0C0;
+            box-shadow: 0 0 20px rgba(192, 192, 192, 0.4);
+            background: linear-gradient(135deg, #F3F4F6, #E5E7EB);
+        }
+        .podium-3 .podium-avatar {
+            border: 4px solid #CD7F32;
+            box-shadow: 0 0 20px rgba(205, 127, 50, 0.4);
+            background: linear-gradient(135deg, #FED7AA, #FDBA74);
+        }
+        
+        .podium-medal {
+            font-size: 2.5rem;
+            margin: 0.75rem 0;
+        }
+        
+        .podium-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .podium-record {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+        
+        .podium-base {
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .podium-1 .podium-base {
+            background: linear-gradient(180deg, #FEF3C7, #FDE68A);
+            height: 120px;
+            width: 140px;
+        }
+        .podium-2 .podium-base {
+            background: linear-gradient(180deg, #F3F4F6, #D1D5DB);
+            height: 80px;
+            width: 120px;
+        }
+        .podium-3 .podium-base {
+            background: linear-gradient(180deg, #FED7AA, #FDBA74);
+            height: 50px;
+            width: 120px;
+        }
+        
+        [data-theme="dark"] .podium-1 .podium-base {
+            background: linear-gradient(180deg, #78350F, #92400E);
+        }
+        [data-theme="dark"] .podium-2 .podium-base {
+            background: linear-gradient(180deg, #374151, #4B5563);
+        }
+        [data-theme="dark"] .podium-3 .podium-base {
+            background: linear-gradient(180deg, #7C2D12, #9A3412);
+        }
+        [data-theme="dark"] .podium-1 .podium-avatar {
+            background: linear-gradient(135deg, #78350F, #92400E);
+            color: #FDE68A;
+        }
+        [data-theme="dark"] .podium-2 .podium-avatar {
+            background: linear-gradient(135deg, #374151, #4B5563);
+            color: #D1D5DB;
+        }
+        [data-theme="dark"] .podium-3 .podium-avatar {
+            background: linear-gradient(135deg, #7C2D12, #9A3412);
+            color: #FED7AA;
+        }
+        
+        .podium-rank {
+            font-size: 2.5rem;
+            font-weight: 700;
+            font-family: 'Playfair Display', serif;
+            opacity: 0.4;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 1.5rem;
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
         }
     </style>
 </head>
 <body>
     <!-- Header -->
-    <header class="glass-card header-glow mx-4 mt-4 px-6 py-5">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
+    <header style="background: var(--bg-card); border-bottom: 1px solid var(--border);">
+        <div class="max-w-screen-2xl mx-auto px-8 py-6 flex justify-between items-center">
             <div>
-                <h1 class="font-cinzel text-3xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent" id="tournament-name">
-                    MTG Tournament
-                </h1>
-                <p class="text-gray-400 text-sm mt-1" id="tournament-info">Loading...</p>
+                <h1 class="font-display text-4xl font-bold" id="tournament-name">Tournament</h1>
+                <p style="color: var(--text-secondary)" class="text-lg mt-1" id="tournament-info">Loading...</p>
             </div>
-            <div class="flex items-center gap-6">
+            <div class="flex items-center gap-10">
                 <div class="text-center">
-                    <div class="text-xs text-gray-500 uppercase tracking-wider">Round</div>
-                    <div class="text-3xl font-bold text-purple-400 font-cinzel" id="current-round">-</div>
+                    <div class="text-sm uppercase tracking-wider" style="color: var(--text-muted)">Round</div>
+                    <div class="text-5xl font-bold font-display" id="current-round">-</div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <div id="ws-status" class="w-3 h-3 rounded-full bg-green-500 pulse-ring"></div>
-                    <span class="text-xs text-gray-500">LIVE</span>
+                <div class="flex items-center gap-3">
+                    <span id="ws-status" class="status-dot live"></span>
+                    <span class="text-sm" style="color: var(--text-secondary)">Live</span>
                 </div>
+                <button onclick="toggleTheme()" class="theme-toggle px-4 py-3 rounded-xl text-lg">
+                    <span id="theme-icon">🌙</span>
+                </button>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 py-8">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Matches Grid -->
-            <div class="lg:col-span-2">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="font-cinzel text-2xl font-bold text-white flex items-center gap-3">
-                        <span class="text-3xl">⚔️</span> Current Matches
-                    </h2>
-                    <span class="live-badge px-3 py-1 rounded-full text-xs font-bold text-white">
-                        LIVE
-                    </span>
-                </div>
-                <div id="matches-grid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <!-- Matches will be inserted here -->
-                </div>
-                <div id="no-matches" class="hidden glass-card text-center py-16">
-                    <div class="text-6xl mb-4">🎴</div>
-                    <p class="text-xl text-gray-400">No active matches</p>
-                    <p class="text-sm text-gray-600 mt-2">Waiting for tournament to start...</p>
+    <!-- Main Content - Live Tournament -->
+    <main id="live-view" class="max-w-screen-2xl mx-auto px-8 py-8">
+        <div class="mb-10">
+            <h2 class="font-display text-2xl font-semibold mb-6">Current Matches</h2>
+            <div id="matches-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+            <div id="no-matches" class="hidden card text-center py-20">
+                <p style="color: var(--text-secondary)" class="text-xl">No active matches</p>
+                <p class="text-base mt-2" style="color: var(--text-muted)">Waiting for tournament to start...</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div>
+                <h2 class="font-display text-2xl font-semibold mb-6">Next Round</h2>
+                <div id="next-round-pairings" class="card p-6">
+                    <p style="color: var(--text-muted)" class="text-lg text-center py-8">No upcoming round</p>
                 </div>
             </div>
-
-            <!-- Standings Sidebar -->
-            <div class="lg:col-span-1">
-                <h2 class="font-cinzel text-2xl font-bold text-white flex items-center gap-3 mb-6">
-                    <span class="text-3xl">🏆</span> Standings
-                </h2>
-                <div class="glass-card overflow-hidden">
+            <div>
+                <h2 class="font-display text-2xl font-semibold mb-6">Standings</h2>
+                <div class="card overflow-hidden">
                     <table class="w-full">
                         <thead>
-                            <tr class="border-b border-gray-800">
-                                <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
-                                <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Player</th>
-                                <th class="px-4 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
-                                <th class="px-4 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Pts</th>
+                            <tr style="border-bottom: 1px solid var(--border)">
+                                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider" style="color: var(--text-muted)">#</th>
+                                <th class="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider" style="color: var(--text-muted)">Player</th>
+                                <th class="px-6 py-4 text-center text-sm font-medium uppercase tracking-wider" style="color: var(--text-muted)">Record</th>
+                                <th class="px-6 py-4 text-center text-sm font-medium uppercase tracking-wider" style="color: var(--text-muted)">Points</th>
                             </tr>
                         </thead>
-                        <tbody id="standings-body" class="divide-y divide-gray-800/50">
-                            <!-- Standings will be inserted here -->
-                        </tbody>
+                        <tbody id="standings-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Final Results View -->
+    <main id="final-view" class="hidden max-w-screen-2xl mx-auto px-8 py-8">
+        <div class="text-center mb-8">
+            <div class="text-6xl mb-4">🏆</div>
+            <h2 class="font-display text-4xl font-bold mb-2">Tournament Complete!</h2>
+            <p style="color: var(--text-secondary)" class="text-xl" id="final-subtitle">Congratulations to all players</p>
+        </div>
+        <div class="card p-8 mb-8">
+            <div class="podium-container" id="podium"></div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div>
+                <h2 class="font-display text-2xl font-semibold mb-6">Tournament Statistics</h2>
+                <div class="grid grid-cols-2 gap-4" id="stats-grid"></div>
+            </div>
+            <div>
+                <h2 class="font-display text-2xl font-semibold mb-6">Final Standings</h2>
+                <div class="card overflow-hidden">
+                    <table class="w-full">
+                        <thead>
+                            <tr style="border-bottom: 1px solid var(--border)">
+                                <th class="px-4 py-3 text-left text-sm font-medium uppercase" style="color: var(--text-muted)">#</th>
+                                <th class="px-4 py-3 text-left text-sm font-medium uppercase" style="color: var(--text-muted)">Player</th>
+                                <th class="px-4 py-3 text-center text-sm font-medium uppercase" style="color: var(--text-muted)">Record</th>
+                                <th class="px-4 py-3 text-center text-sm font-medium uppercase" style="color: var(--text-muted)">Pts</th>
+                            </tr>
+                        </thead>
+                        <tbody id="final-standings-body"></tbody>
                     </table>
                 </div>
             </div>
@@ -245,27 +494,37 @@
         const WS_URL = 'ws://localhost:8000';
         let ws = null;
         let tournamentId = 1;
-        let currentMatchIds = new Set(); // Track existing matches to avoid re-rendering
+        let currentMatchIds = new Set();
         let isFirstLoad = true;
+        let currentRoundNum = 0;
+        let displayedRoundNum = 0; // The round we're currently showing
+        let totalRounds = 0;
+        let tournamentStatus = '';
+        let roundStartPositions = {};
+        let allStandings = [];
+        let cachedMatchesData = null; // Cache the current displayed matches
+
+        // Theme
+        function toggleTheme() {
+            const html = document.documentElement;
+            const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            document.getElementById('theme-icon').textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        }
+        
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.getElementById('theme-icon').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
 
         function connectWebSocket() {
             ws = new WebSocket(`${WS_URL}/ws/dashboard`);
-
-            ws.onopen = () => {
-                console.log('WebSocket connected');
-                document.getElementById('ws-status').className = 'w-3 h-3 rounded-full bg-green-500 pulse-ring';
-            };
-
+            ws.onopen = () => document.getElementById('ws-status').className = 'status-dot live';
             ws.onclose = () => {
-                console.log('WebSocket disconnected');
-                document.getElementById('ws-status').className = 'w-3 h-3 rounded-full bg-red-500';
+                document.getElementById('ws-status').className = 'status-dot offline';
                 setTimeout(connectWebSocket, 3000);
             };
-
-            ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                handleWebSocketMessage(data);
-            };
+            ws.onmessage = (event) => handleWebSocketMessage(JSON.parse(event.data));
         }
 
         function handleWebSocketMessage(data) {
@@ -274,67 +533,50 @@
                     updatePlayerHealth(data.match_id, data.player_id, data.new_health);
                     break;
                 case 'match_complete':
-                    updateMatchStatus(data.match_id, 'completed');
+                    updateMatchStatus(data.match_id, 'completed', data.winner_id);
                     loadStandings();
                     break;
                 case 'round_complete':
+                    // Don't immediately switch - wait for matches to start
                     loadTournamentInfo();
-                    isFirstLoad = true; // Allow animation for new round
-                    loadCurrentRound();
-                    loadStandings();
+                    loadNextRoundPairings();
                     break;
             }
         }
 
         function updatePlayerHealth(matchId, playerId, newHealth) {
-            const playerContainer = document.querySelector(`[data-match="${matchId}"][data-player="${playerId}"]`);
-            if (!playerContainer) return;
-            
-            const healthBar = playerContainer.querySelector('.health-bar');
-            const healthText = playerContainer.querySelector('.health-text');
-
+            const container = document.querySelector(`[data-match="${matchId}"][data-player="${playerId}"]`);
+            if (!container) return;
+            const healthBar = container.querySelector('.health-bar');
+            const healthText = container.querySelector('.health-text');
             if (healthBar && healthText) {
-                const percentage = Math.max(0, (newHealth / 20) * 100);
-                healthBar.style.width = percentage + '%';
+                healthBar.style.width = Math.max(0, (newHealth / 20) * 100) + '%';
                 healthText.textContent = newHealth;
-                healthBar.className = 'health-bar ' + getHealthColor(newHealth);
-                
-                // Update text color
-                if (newHealth <= 5) {
-                    healthText.classList.add('text-red-400');
-                    healthText.classList.remove('text-white');
-                } else {
-                    healthText.classList.remove('text-red-400');
-                    healthText.classList.add('text-white');
-                }
-                
-                if (newHealth <= 5 && newHealth > 0) {
-                    playerContainer.classList.add('health-critical');
-                } else {
-                    playerContainer.classList.remove('health-critical');
-                }
+                healthBar.className = 'health-bar ' + getHealthClass(newHealth);
             }
         }
 
-        function updateMatchStatus(matchId, status) {
+        function updateMatchStatus(matchId, status, winnerId) {
             const matchCard = document.querySelector(`[data-match-card="${matchId}"]`);
-            if (matchCard) {
-                if (status === 'completed') {
-                    matchCard.classList.add('completed');
-                    const badge = matchCard.querySelector('.status-badge');
-                    if (badge) {
-                        badge.className = 'status-badge px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400';
-                        badge.textContent = '✓ Complete';
-                    }
+            if (matchCard && status === 'completed') {
+                matchCard.classList.add('completed');
+                const badge = matchCard.querySelector('.status-badge');
+                if (badge) {
+                    badge.style.background = 'var(--bg-secondary)';
+                    badge.style.color = 'var(--text-secondary)';
+                    badge.textContent = 'Complete';
+                }
+                if (winnerId) {
+                    const winnerContainer = matchCard.querySelector(`[data-player="${winnerId}"]`);
+                    if (winnerContainer) winnerContainer.classList.add('player-winner');
                 }
             }
         }
 
-        function getHealthColor(health) {
-            if (health > 15) return 'bg-gradient-to-r from-green-500 to-emerald-400';
-            if (health > 10) return 'bg-gradient-to-r from-yellow-500 to-amber-400';
-            if (health > 5) return 'bg-gradient-to-r from-orange-500 to-red-400';
-            return 'bg-gradient-to-r from-red-600 to-red-500';
+        function getHealthClass(health) {
+            if (health > 10) return 'healthy';
+            if (health > 5) return 'warning';
+            return 'danger';
         }
 
         async function loadTournamentInfo() {
@@ -345,12 +587,147 @@
                 document.getElementById('tournament-name').textContent = data.name;
                 document.getElementById('tournament-info').textContent =
                     `${data.status.charAt(0).toUpperCase() + data.status.slice(1)} • ${data.players_count} players`;
-                document.getElementById('current-round').textContent =
-                    `${data.current_round}/${data.total_rounds}`;
 
                 tournamentId = data.tournament_id;
+                tournamentStatus = data.status;
+                currentRoundNum = data.current_round;
+                totalRounds = data.total_rounds;
+
+                // Only update displayed round number when we actually switch
+                // The header shows what round we're displaying, not what round the server is on
+                
+                if (data.status === 'completed' || (data.current_round >= data.total_rounds && await isAllMatchesComplete())) {
+                    showFinalResults();
+                } else {
+                    document.getElementById('live-view').classList.remove('hidden');
+                    document.getElementById('final-view').classList.add('hidden');
+                }
             } catch (error) {
                 console.error('Error loading tournament info:', error);
+            }
+        }
+
+        async function isAllMatchesComplete() {
+            try {
+                const response = await fetch(`${API_URL}/api/tournament/${tournamentId}/current-round`);
+                const data = await response.json();
+                return data.matches && data.matches.every(m => m.status === 'completed');
+            } catch {
+                return false;
+            }
+        }
+
+        async function showFinalResults() {
+            document.getElementById('live-view').classList.add('hidden');
+            document.getElementById('final-view').classList.remove('hidden');
+
+            await loadStandings();
+            renderPodium();
+            renderFinalStandings();
+            await loadAndRenderStats();
+        }
+
+        function renderPodium() {
+            const podium = document.getElementById('podium');
+            const top3 = allStandings.slice(0, 3);
+            
+            if (top3.length < 3) return;
+
+            const order = [top3[1], top3[0], top3[2]]; // 2nd, 1st, 3rd
+            const places = ['podium-2', 'podium-1', 'podium-3'];
+            const medals = ['🥈', '🥇', '🥉'];
+            const ranks = ['2', '1', '3'];
+
+            podium.innerHTML = order.map((player, i) => {
+                const initial = player.name.charAt(0).toUpperCase();
+                const colorStyle = i === 1 ? 'color: #92400E' : i === 0 ? 'color: #6B7280' : 'color: #9A3412';
+                return `
+                    <div class="podium-place ${places[i]}">
+                        <div class="podium-avatar">
+                            <span style="${colorStyle}">${initial}</span>
+                        </div>
+                        <div class="podium-medal">${medals[i]}</div>
+                        <div class="podium-name">${player.name}</div>
+                        <div class="podium-record">${player.wins}-${player.losses}</div>
+                        <div class="podium-base">
+                            <div class="podium-rank">${ranks[i]}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('final-subtitle').textContent = `🎉 ${top3[0].name} wins the tournament!`;
+        }
+
+        function renderFinalStandings() {
+            const tbody = document.getElementById('final-standings-body');
+            const remaining = allStandings.slice(3);
+
+            tbody.innerHTML = remaining.map((player) => `
+                <tr class="standing-row" style="border-bottom: 1px solid var(--border)">
+                    <td class="px-4 py-3 font-semibold">${player.rank}</td>
+                    <td class="px-4 py-3 font-medium">${player.name}</td>
+                    <td class="px-4 py-3 text-center">
+                        <span style="color: var(--success)">${player.wins}</span>-<span style="color: var(--danger)">${player.losses}</span>
+                    </td>
+                    <td class="px-4 py-3 text-center font-semibold">${player.points}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadAndRenderStats() {
+            const statsGrid = document.getElementById('stats-grid');
+            
+            try {
+                const scheduleRes = await fetch(`${API_URL}/api/tournament/${tournamentId}/schedule`);
+                const scheduleData = await scheduleRes.json();
+                
+                const colorStats = { W: {wins: 0, total: 0}, U: {wins: 0, total: 0}, B: {wins: 0, total: 0}, R: {wins: 0, total: 0}, G: {wins: 0, total: 0} };
+                const colorNames = { W: 'White', U: 'Blue', B: 'Black', R: 'Red', G: 'Green' };
+                
+                allStandings.forEach(player => {
+                    (player.colors || []).forEach(c => {
+                        if (colorStats[c]) {
+                            colorStats[c].total++;
+                            colorStats[c].wins += player.wins;
+                        }
+                    });
+                });
+
+                let bestColor = null, bestWinRate = 0;
+                Object.entries(colorStats).forEach(([color, stats]) => {
+                    if (stats.total > 0) {
+                        const totalGames = allStandings.filter(p => (p.colors || []).includes(color))
+                            .reduce((sum, p) => sum + p.wins + p.losses, 0);
+                        const winRate = totalGames > 0 ? (stats.wins / totalGames) * 100 : 0;
+                        if (winRate > bestWinRate) { bestWinRate = winRate; bestColor = color; }
+                    }
+                });
+
+                let popularColor = null, popularCount = 0;
+                Object.entries(colorStats).forEach(([color, stats]) => {
+                    if (stats.total > popularCount) { popularCount = stats.total; popularColor = color; }
+                });
+
+                let totalMatches = scheduleData.rounds.reduce((sum, r) => sum + r.matches.length, 0);
+                const undefeated = allStandings.filter(p => p.losses === 0);
+
+                const stats = [
+                    { icon: bestColor ? `<span class="color-icon color-${bestColor}" style="width:40px;height:40px"></span>` : '🎨', value: bestColor ? colorNames[bestColor] : 'N/A', label: `Best Color (${bestWinRate.toFixed(0)}% win rate)` },
+                    { icon: popularColor ? `<span class="color-icon color-${popularColor}" style="width:40px;height:40px"></span>` : '📊', value: popularColor ? colorNames[popularColor] : 'N/A', label: `Most Popular (${popularCount} players)` },
+                    { icon: '⚔️', value: totalMatches, label: 'Total Matches Played' },
+                    { icon: '🏅', value: undefeated.length > 0 ? undefeated.map(p => p.name).join(', ') : 'None', label: 'Undefeated Players' }
+                ];
+
+                statsGrid.innerHTML = stats.map(stat => `
+                    <div class="card stat-card">
+                        <div class="stat-icon">${stat.icon}</div>
+                        <div class="stat-value">${stat.value}</div>
+                        <div class="stat-label">${stat.label}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading stats:', error);
             }
         }
 
@@ -366,177 +743,211 @@
                     grid.innerHTML = '';
                     noMatches.classList.remove('hidden');
                     currentMatchIds.clear();
+                    cachedMatchesData = null;
                     return;
                 }
 
                 noMatches.classList.add('hidden');
 
-                // Check if we need a full refresh (different matches)
                 const newMatchIds = new Set(data.matches.map(m => m.match_id));
-                const needsFullRefresh = isFirstLoad || 
-                    newMatchIds.size !== currentMatchIds.size ||
+                
+                // Check if new round has matches that have started (in_progress or completed)
+                const hasStartedMatches = data.matches.some(m => m.status === 'in_progress' || m.status === 'completed');
+                
+                // Check if this is a different set of matches (new round)
+                const isDifferentMatches = newMatchIds.size !== currentMatchIds.size ||
                     ![...newMatchIds].every(id => currentMatchIds.has(id));
 
-                if (needsFullRefresh) {
-                    // Full render with animation only on first load
-                    grid.innerHTML = data.matches.map((match, i) => 
-                        createMatchCard(match, isFirstLoad ? i : -1)
-                    ).join('');
+                // If we have cached data and the new round hasn't started yet, keep showing cached data
+                if (cachedMatchesData && isDifferentMatches && !hasStartedMatches) {
+                    // New round exists but hasn't started - keep showing completed round
+                    // Just update health values on cached data if needed
+                    return;
+                }
+
+                // If this is a new round that HAS started, reset positions and switch
+                if (isDifferentMatches && hasStartedMatches) {
+                    roundStartPositions = {};
+                    displayedRoundNum = data.round_number || currentRoundNum;
+                    document.getElementById('current-round').textContent = `${displayedRoundNum}/${totalRounds}`;
+                    grid.innerHTML = data.matches.map(match => createMatchCard(match)).join('');
                     currentMatchIds = newMatchIds;
+                    cachedMatchesData = data;
                     isFirstLoad = false;
-                } else {
-                    // Update existing cards in place
-                    data.matches.forEach(match => {
-                        updateMatchCard(match);
-                    });
+                } else if (isFirstLoad || !isDifferentMatches) {
+                    // First load or same round - update normally
+                    if (isFirstLoad) {
+                        displayedRoundNum = data.round_number || currentRoundNum;
+                        document.getElementById('current-round').textContent = `${displayedRoundNum}/${totalRounds}`;
+                        grid.innerHTML = data.matches.map(match => createMatchCard(match)).join('');
+                        currentMatchIds = newMatchIds;
+                        cachedMatchesData = data;
+                        isFirstLoad = false;
+                    } else {
+                        // Same round - just update values
+                        data.matches.forEach(match => updateMatchCard(match));
+                        cachedMatchesData = data;
+                    }
+                }
+
+                if (currentRoundNum >= totalRounds && data.matches.every(m => m.status === 'completed')) {
+                    setTimeout(() => showFinalResults(), 2000);
                 }
             } catch (error) {
                 console.error('Error loading current round:', error);
             }
         }
 
-        function createMatchCard(match, animationIndex) {
-            const isCompleted = match.status === 'completed';
-            const statusClass = isCompleted ? 'completed' : '';
-            const statusBadge = isCompleted 
-                ? '<span class="status-badge px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400">✓ Complete</span>'
-                : '<span class="status-badge px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400">⚡ In Progress</span>';
+        async function loadNextRoundPairings() {
+            const container = document.getElementById('next-round-pairings');
             
-            const animationStyle = animationIndex >= 0 
-                ? `opacity: 0; animation: fadeSlideIn 0.5s ease forwards; animation-delay: ${animationIndex * 0.1}s;` 
-                : '';
+            if (displayedRoundNum >= totalRounds) {
+                container.innerHTML = `<p style="color: var(--text-muted)" class="text-lg text-center py-8">This is the final round</p>`;
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/tournament/${tournamentId}/schedule`);
+                const data = await response.json();
+                const nextRound = data.rounds?.find(r => r.round_number === displayedRoundNum + 1);
+                
+                if (!nextRound) {
+                    container.innerHTML = `<p style="color: var(--text-muted)" class="text-lg text-center py-8">No upcoming round</p>`;
+                    return;
+                }
+
+                container.innerHTML = `
+                    <div class="text-sm font-medium uppercase tracking-wider mb-4" style="color: var(--text-muted)">Round ${nextRound.round_number} Pairings</div>
+                    ${nextRound.matches.map(match => `
+                        <div class="pairing-row text-lg">
+                            <div class="flex-1 font-semibold">${match.player1}</div>
+                            <div class="px-6" style="color: var(--text-muted)">vs</div>
+                            <div class="flex-1 text-right font-semibold">${match.player2}</div>
+                        </div>
+                    `).join('')}
+                `;
+            } catch (error) {
+                console.error('Error loading next round:', error);
+            }
+        }
+
+        function createMatchCard(match) {
+            const isCompleted = match.status === 'completed';
+            const statusStyle = isCompleted 
+                ? 'background: var(--bg-secondary); color: var(--text-secondary);'
+                : 'background: #D1FAE5; color: #059669;';
 
             return `
-                <div class="match-card ${statusClass}" data-match-card="${match.match_id}" style="${animationStyle}">
-                    <div class="px-5 py-3 border-b border-gray-800/50 flex justify-between items-center">
-                        <span class="font-cinzel font-bold text-gray-400">Match ${match.match_id}</span>
-                        ${statusBadge}
+                <div class="match-card ${isCompleted ? 'completed' : ''}" data-match-card="${match.match_id}">
+                    <div class="px-5 py-4 flex justify-between items-center" style="border-bottom: 1px solid var(--border)">
+                        <span class="font-semibold text-base" style="color: var(--text-secondary)">Match ${match.match_id}</span>
+                        <span class="status-badge px-3 py-1.5 rounded-lg text-sm font-medium" style="${statusStyle}">${isCompleted ? 'Complete' : 'Live'}</span>
                     </div>
                     <div class="p-5">
-                        ${createPlayerDisplay(match.match_id, match.player1)}
+                        ${createPlayerDisplay(match.match_id, match.player1, match.winner_id)}
                         <div class="my-4 flex items-center">
-                            <div class="flex-1 vs-divider"></div>
-                            <span class="px-4 text-gray-600 font-bold text-sm">VS</span>
-                            <div class="flex-1 vs-divider"></div>
+                            <div class="flex-1 h-px" style="background: var(--border)"></div>
+                            <span class="px-4 text-sm font-semibold" style="color: var(--text-muted)">VS</span>
+                            <div class="flex-1 h-px" style="background: var(--border)"></div>
                         </div>
-                        ${createPlayerDisplay(match.match_id, match.player2)}
+                        ${createPlayerDisplay(match.match_id, match.player2, match.winner_id)}
                     </div>
                 </div>
             `;
         }
 
         function updateMatchCard(match) {
-            // Update player 1
-            updatePlayerInCard(match.match_id, match.player1);
-            // Update player 2
-            updatePlayerInCard(match.match_id, match.player2);
-            // Update match status
-            updateMatchStatus(match.match_id, match.status);
+            updatePlayerInCard(match.match_id, match.player1, match.winner_id);
+            updatePlayerInCard(match.match_id, match.player2, match.winner_id);
+            updateMatchStatus(match.match_id, match.status, match.winner_id);
         }
 
-        function updatePlayerInCard(matchId, player) {
-            const playerContainer = document.querySelector(`[data-match="${matchId}"][data-player="${player.player_id}"]`);
-            if (!playerContainer) return;
-
+        function updatePlayerInCard(matchId, player, winnerId) {
+            const container = document.querySelector(`[data-match="${matchId}"][data-player="${player.player_id}"]`);
+            if (!container) return;
             const health = player.health ?? 20;
-            const healthPercent = Math.max(0, (health / 20) * 100);
-            const healthColor = getHealthColor(health);
-
-            const healthBar = playerContainer.querySelector('.health-bar');
-            const healthText = playerContainer.querySelector('.health-text');
-
+            const healthBar = container.querySelector('.health-bar');
+            const healthText = container.querySelector('.health-text');
             if (healthBar) {
-                healthBar.style.width = healthPercent + '%';
-                healthBar.className = 'health-bar ' + healthColor;
+                healthBar.style.width = Math.max(0, (health / 20) * 100) + '%';
+                healthBar.className = 'health-bar ' + getHealthClass(health);
             }
-
-            if (healthText) {
-                healthText.textContent = health;
-                if (health <= 5) {
-                    healthText.classList.add('text-red-400');
-                    healthText.classList.remove('text-white');
-                } else {
-                    healthText.classList.remove('text-red-400');
-                    healthText.classList.add('text-white');
-                }
-            }
-
-            if (health <= 5 && health > 0) {
-                playerContainer.classList.add('health-critical');
-            } else {
-                playerContainer.classList.remove('health-critical');
-            }
+            if (healthText) healthText.textContent = health;
+            if (winnerId === player.player_id) container.classList.add('player-winner');
         }
 
-        function createPlayerDisplay(matchId, player) {
+        function createPlayerDisplay(matchId, player, winnerId) {
             const health = player.health ?? 20;
             const healthPercent = Math.max(0, (health / 20) * 100);
-            const healthColor = getHealthColor(health);
-            const colors = player.colors || [];
-            const playerId = player.player_id;
             const initial = player.name.charAt(0).toUpperCase();
-            const avatarUrl = player.avatar_url;
+            const isWinner = winnerId === player.player_id;
 
-            const avatarContent = avatarUrl 
-                ? `<img src="${API_URL}${avatarUrl}" alt="${player.name}" onerror="this.parentElement.innerHTML='<div class=\\'player-avatar-bg\\'>${initial}</div>'">`
-                : `<div class="player-avatar-bg">${initial}</div>`;
+            const avatarContent = player.avatar_url 
+                ? `<img src="${API_URL}${player.avatar_url}" alt="${player.name}" onerror="this.parentElement.innerHTML='<div class=\\'player-avatar-initial\\'>${initial}</div>'">`
+                : `<div class="player-avatar-initial">${initial}</div>`;
 
             return `
-                <div class="flex items-center gap-4" data-match="${matchId}" data-player="${playerId}">
-                    <div class="player-avatar">
-                        ${avatarContent}
-                    </div>
+                <div class="flex items-center gap-4 ${isWinner ? 'player-winner' : ''}" data-match="${matchId}" data-player="${player.player_id}">
+                    <div class="player-avatar">${avatarContent}</div>
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center justify-between mb-2">
-                            <div class="font-semibold text-white truncate">${player.name}</div>
-                            <div class="text-2xl font-bold health-text ${health <= 5 ? 'text-red-400' : 'text-white'}">${health}</div>
+                            <div class="font-semibold text-lg truncate">${player.name}</div>
+                            <div class="health-number health-text">${health}</div>
                         </div>
                         <div class="health-bar-bg mb-2">
-                            <div class="health-bar ${healthColor}" style="width: ${healthPercent}%"></div>
+                            <div class="health-bar ${getHealthClass(health)}" style="width: ${healthPercent}%"></div>
                         </div>
                         <div class="flex gap-1">
-                            ${colors.map(color => `<span class="color-icon color-${color} w-5 h-5" title="${getColorName(color)}"></span>`).join('')}
+                            ${(player.colors || []).map(color => `<span class="color-icon color-${color}"></span>`).join('')}
                         </div>
                     </div>
                 </div>
             `;
         }
 
-        function getColorName(color) {
-            const names = { W: 'White', U: 'Blue', B: 'Black', R: 'Red', G: 'Green' };
-            return names[color] || color;
-        }
-
         async function loadStandings() {
             try {
                 const response = await fetch(`${API_URL}/api/tournament/${tournamentId}/standings`);
                 const data = await response.json();
+                allStandings = data.standings;
 
                 const tbody = document.getElementById('standings-body');
+                const isFirstStandingsLoad = Object.keys(roundStartPositions).length === 0;
+                
+                if (isFirstStandingsLoad) {
+                    data.standings.forEach((player, index) => {
+                        roundStartPositions[player.player_id] = index + 1;
+                    });
+                }
+                
                 tbody.innerHTML = data.standings.map((player, index) => {
                     const rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : index === 2 ? 'rank-3' : 'rank-default';
+                    const currentPos = index + 1;
+                    const startPos = roundStartPositions[player.player_id];
+                    
+                    let positionChange = '';
+                    if (startPos !== undefined && startPos !== currentPos) {
+                        const diff = startPos - currentPos;
+                        positionChange = diff > 0 
+                            ? `<span class="position-change position-up">▲${diff}</span>`
+                            : `<span class="position-change position-down">▼${Math.abs(diff)}</span>`;
+                    }
                     
                     return `
                         <tr class="standing-row">
-                            <td class="px-4 py-4">
-                                <span class="rank-badge ${rankClass}">${player.rank}</span>
-                            </td>
-                            <td class="px-4 py-4">
-                                <div class="font-medium text-white">${player.name}</div>
-                                <div class="flex gap-1 mt-1">
-                                    ${(player.colors || []).map(color =>
-                                        `<span class="color-icon color-${color} w-4 h-4"></span>`
-                                    ).join('')}
+                            <td class="px-6 py-4"><span class="rank-badge ${rankClass}">${player.rank}</span></td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <span class="font-semibold text-lg">${player.name}</span>
+                                    ${positionChange}
                                 </div>
                             </td>
-                            <td class="px-4 py-4 text-center">
-                                <span class="text-green-400 font-semibold">${player.wins}</span>
-                                <span class="text-gray-600 mx-1">-</span>
-                                <span class="text-red-400 font-semibold">${player.losses}</span>
+                            <td class="px-6 py-4 text-center">
+                                <span style="color: var(--success)" class="font-semibold text-lg">${player.wins}</span>
+                                <span style="color: var(--text-muted)">-</span>
+                                <span style="color: var(--danger)" class="font-semibold text-lg">${player.losses}</span>
                             </td>
-                            <td class="px-4 py-4 text-center">
-                                <span class="font-bold text-amber-400">${player.points}</span>
-                            </td>
+                            <td class="px-6 py-4 text-center"><span class="font-bold text-lg">${player.points}</span></td>
                         </tr>
                     `;
                 }).join('');
@@ -552,20 +963,11 @@
             }, 2000);
         }
 
-        // Add the CSS animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeSlideIn {
-                from { opacity: 0; transform: translateY(20px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-        `;
-        document.head.appendChild(style);
-
         async function init() {
             await loadTournamentInfo();
             await loadCurrentRound();
             await loadStandings();
+            await loadNextRoundPairings();
             connectWebSocket();
             startAutoRefresh();
         }

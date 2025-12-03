@@ -42,6 +42,7 @@ class MatchDetails(BaseModel):
     player1: MatchPlayerInfo
     player2: MatchPlayerInfo
     status: str
+    winner_id: Optional[int] = None
 
 
 class CurrentRoundResponse(BaseModel):

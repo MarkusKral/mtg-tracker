@@ -122,7 +122,8 @@ def get_current_round(tournament_id: int, db: Session = Depends(get_db)):
                 colors=player2_colors,
                 health=match.player2_health
             ),
-            status=match.status
+            status=match.status,
+            winner_id=match.winner_id
         ))
 
     return {

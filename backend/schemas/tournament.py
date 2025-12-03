@@ -5,10 +5,7 @@ from datetime import datetime
 
 class TournamentCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)
-    draft_type: str = Field(..., min_length=1, max_length=100)
-    tournament_type: str = "Round Robin"
     max_players: int = Field(..., ge=2, le=20)
-    match_format: str = Field(default="Best of 1")
     starting_life: int = Field(default=20, ge=1, le=100)
 
 

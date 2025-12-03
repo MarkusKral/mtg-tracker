@@ -3,7 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from database.database import init_db
 from api import admin, players, matches, tournament, websockets
+from dotenv import load_dotenv
 import os
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = FastAPI(
     title="MTG Draft Tournament Tracker",

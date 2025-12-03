@@ -42,7 +42,8 @@ class TournamentSimulator:
         self.speed_config = {
             "slow": (5, 10),
             "medium": (3, 5),
-            "fast": (1, 3)
+            "fast": (1, 3),
+            "fastest": (0.3, 1)
         }
 
         self.running = True
@@ -107,10 +108,7 @@ class TournamentSimulator:
             f"{self.api_url}/api/admin/tournament",
             json={
                 "name": f"Simulated Tournament {int(time.time())}",
-                "draft_type": "Simulated Draft",
-                "tournament_type": "Round Robin",
                 "max_players": self.num_players + (1 if self.manual_player else 0),
-                "match_format": "Best of 1",
                 "starting_life": 20
             },
             headers={"Authorization": f"Bearer {self.admin_token}"}
@@ -415,7 +413,7 @@ def main():
     )
     parser.add_argument(
         "--speed",
-        choices=["slow", "medium", "fast"],
+        choices=["slow", "medium", "fast", "fastest"],
         default="medium",
         help="Simulation speed"
     )

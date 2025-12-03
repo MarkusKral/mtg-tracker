@@ -4,199 +4,181 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MTG Tournament Tracker</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
-            --primary: #8B5CF6;
-            --accent: #F59E0B;
-            --bg-dark: #0F0F1A;
+            --bg-primary: #FAF9F6;
+            --bg-secondary: #F5F3EF;
+            --bg-card: #FFFFFF;
+            --text-primary: #2D2A26;
+            --text-secondary: #6B6560;
+            --text-muted: #9CA3AF;
+            --border: #E5E2DC;
+            --accent-gold: #B8860B;
+            --accent-burgundy: #722F37;
+        }
+        
+        [data-theme="dark"] {
+            --bg-primary: #1A1A1A;
+            --bg-secondary: #242424;
+            --bg-card: #2D2D2D;
+            --text-primary: #F5F5F5;
+            --text-secondary: #A0A0A0;
+            --text-muted: #6B6B6B;
+            --border: #404040;
+            --accent-gold: #D4A84B;
+            --accent-burgundy: #C45A5A;
         }
         
         body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-dark);
-            background-image: 
-                radial-gradient(ellipse at top, rgba(139, 92, 246, 0.2) 0%, transparent 50%),
-                radial-gradient(ellipse at bottom right, rgba(245, 158, 11, 0.15) 0%, transparent 50%),
-                radial-gradient(ellipse at bottom left, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+            font-family: 'Source Sans 3', sans-serif;
+            background: var(--bg-primary);
             min-height: 100vh;
-            overflow-x: hidden;
+            color: var(--text-primary);
+            transition: background 0.3s ease, color 0.3s ease;
         }
         
-        .font-cinzel { font-family: 'Cinzel', serif; }
+        .font-display { font-family: 'Playfair Display', serif; }
         
-        .card-link {
-            background: rgba(26, 26, 46, 0.7);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
         
-        .card-link::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--primary), var(--accent));
-            transform: scaleX(0);
-            transition: transform 0.4s ease;
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+            border-color: var(--accent-gold);
         }
         
-        .card-link:hover::before {
-            transform: scaleX(1);
+        [data-theme="dark"] .card {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
-        
-        .card-link:hover {
-            transform: translateY(-8px);
-            border-color: rgba(139, 92, 246, 0.4);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 40px rgba(139, 92, 246, 0.1);
-        }
-        
-        .icon-container {
-            width: 80px;
-            height: 80px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 36px;
-            margin: 0 auto 1.5rem;
-            transition: all 0.4s ease;
-        }
-        
-        .card-link:hover .icon-container {
-            transform: scale(1.1);
-        }
-        
-        .dashboard-icon { background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.3)); }
-        .player-icon { background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(52, 211, 153, 0.3)); }
-        .admin-icon { background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(245, 158, 11, 0.3)); }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        .float-animation {
-            animation: float 6s ease-in-out infinite;
-        }
-        
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-        
-        .title-shimmer {
-            background: linear-gradient(90deg, 
-                #a78bfa 0%, 
-                #f472b6 25%, 
-                #fbbf24 50%, 
-                #f472b6 75%, 
-                #a78bfa 100%
-            );
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            animation: shimmer 4s linear infinite;
+        [data-theme="dark"] .card:hover {
+            box-shadow: 0 12px 24px rgba(0,0,0,0.3);
         }
         
         .mana-symbol {
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             display: inline-block;
             background-size: cover;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-            animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
         }
         
-        .mana-W { background-image: url('assets/avatars/W.svg'); animation-delay: 0s; }
-        .mana-U { background-image: url('assets/avatars/U.svg'); animation-delay: 0.5s; }
-        .mana-B { background-image: url('assets/avatars/B.svg'); animation-delay: 1s; }
-        .mana-R { background-image: url('assets/avatars/R.svg'); animation-delay: 1.5s; }
-        .mana-G { background-image: url('assets/avatars/G.svg'); animation-delay: 2s; }
+        .mana-W { background-image: url('assets/avatars/W.svg'); }
+        .mana-U { background-image: url('assets/avatars/U.svg'); }
+        .mana-B { background-image: url('assets/avatars/B.svg'); }
+        .mana-R { background-image: url('assets/avatars/R.svg'); }
+        .mana-G { background-image: url('assets/avatars/G.svg'); }
         
-        .api-link {
-            color: #94a3b8;
-            transition: all 0.3s ease;
-            border-bottom: 1px solid transparent;
+        .divider {
+            height: 1px;
+            background: var(--border);
         }
-        .api-link:hover {
-            color: #a78bfa;
-            border-bottom-color: #a78bfa;
+        
+        .icon-box {
+            width: 64px;
+            height: 64px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 1rem;
+        }
+        
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+        .theme-toggle:hover {
+            border-color: var(--text-secondary);
         }
     </style>
 </head>
-<body class="text-white min-h-screen flex items-center justify-center p-6">
+<body class="min-h-screen flex items-center justify-center p-8">
+    <!-- Theme Toggle -->
+    <button onclick="toggleTheme()" class="theme-toggle fixed top-4 right-4 px-3 py-2 rounded-lg text-sm font-medium">
+        <span id="theme-icon">🌙</span>
+    </button>
+
     <div class="max-w-4xl w-full">
-        <!-- Mana Symbols -->
-        <div class="flex justify-center gap-4 mb-6">
-            <span class="mana-symbol mana-W"></span>
-            <span class="mana-symbol mana-U"></span>
-            <span class="mana-symbol mana-B"></span>
-            <span class="mana-symbol mana-R"></span>
-            <span class="mana-symbol mana-G"></span>
-        </div>
-        
-        <!-- Title -->
-        <div class="text-center mb-16">
-            <h1 class="font-cinzel text-5xl md:text-6xl font-bold title-shimmer mb-4">
-                MTG Tournament
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <div class="flex justify-center gap-3 mb-6">
+                <span class="mana-symbol mana-W"></span>
+                <span class="mana-symbol mana-U"></span>
+                <span class="mana-symbol mana-B"></span>
+                <span class="mana-symbol mana-R"></span>
+                <span class="mana-symbol mana-G"></span>
+            </div>
+            <h1 class="font-display text-5xl font-bold mb-3">
+                Tournament Tracker
             </h1>
-            <p class="text-gray-400 text-lg">Track your draft tournaments in style</p>
+            <p class="text-secondary" style="color: var(--text-secondary)">Manage your Magic: The Gathering draft tournaments</p>
         </div>
 
         <!-- Navigation Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
             <!-- Live Dashboard -->
-            <a href="dashboard.html" class="card-link rounded-2xl p-8 text-center block">
-                <div class="icon-container dashboard-icon float-animation">
-                    📺
-                </div>
-                <h2 class="font-cinzel text-xl font-bold mb-3 text-white">Live Dashboard</h2>
-                <p class="text-gray-400 text-sm leading-relaxed">
-                    Real-time match tracking and standings for spectators
+            <a href="dashboard.html" class="card p-8 text-center block">
+                <div class="icon-box mx-auto" style="background: rgba(59, 130, 246, 0.1);">📺</div>
+                <h2 class="font-display text-xl font-semibold mb-2">Live Dashboard</h2>
+                <p style="color: var(--text-secondary)" class="text-sm">
+                    Real-time match tracking for spectators
                 </p>
             </a>
 
             <!-- Player Interface -->
-            <a href="player.html" class="card-link rounded-2xl p-8 text-center block" style="animation-delay: 0.1s;">
-                <div class="icon-container player-icon float-animation" style="animation-delay: 1s;">
-                    📱
-                </div>
-                <h2 class="font-cinzel text-xl font-bold mb-3 text-white">Player</h2>
-                <p class="text-gray-400 text-sm leading-relaxed">
-                    Mobile-friendly interface to track your health and matches
+            <a href="player.html" class="card p-8 text-center block">
+                <div class="icon-box mx-auto" style="background: rgba(16, 185, 129, 0.1);">📱</div>
+                <h2 class="font-display text-xl font-semibold mb-2">Player Portal</h2>
+                <p style="color: var(--text-secondary)" class="text-sm">
+                    Track your matches and life totals
                 </p>
             </a>
 
             <!-- Admin Panel -->
-            <a href="admin.html" class="card-link rounded-2xl p-8 text-center block" style="animation-delay: 0.2s;">
-                <div class="icon-container admin-icon float-animation" style="animation-delay: 2s;">
-                    ⚙️
-                </div>
-                <h2 class="font-cinzel text-xl font-bold mb-3 text-white">Admin</h2>
-                <p class="text-gray-400 text-sm leading-relaxed">
-                    Create and manage tournaments, control rounds
+            <a href="admin.html" class="card p-8 text-center block">
+                <div class="icon-box mx-auto" style="background: rgba(245, 158, 11, 0.1);">⚙️</div>
+                <h2 class="font-display text-xl font-semibold mb-2">Administration</h2>
+                <p style="color: var(--text-secondary)" class="text-sm">
+                    Create and manage tournaments
                 </p>
             </a>
         </div>
 
         <!-- Footer -->
-        <div class="mt-16 text-center">
-            <div class="inline-flex items-center gap-4 text-sm">
-                <a href="http://localhost:8000/docs" target="_blank" class="api-link">
-                    API Documentation
-                </a>
-                <span class="text-gray-700">•</span>
-                <span class="text-gray-600">v1.0</span>
-            </div>
+        <div class="text-center">
+            <div class="divider mb-6"></div>
+            <a href="http://localhost:8000/docs" target="_blank" 
+               style="color: var(--text-muted)" class="hover:opacity-80 text-sm transition">
+                API Documentation →
+            </a>
         </div>
     </div>
+
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            document.getElementById('theme-icon').textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        }
+        
+        // Initialize theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.getElementById('theme-icon').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+    </script>
 </body>
 </html>

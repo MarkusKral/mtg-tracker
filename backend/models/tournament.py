@@ -9,10 +9,7 @@ class Tournament(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String, nullable=False)
-    draft_type = Column(String, nullable=False)
-    tournament_type = Column(String, nullable=False)
     max_players = Column(Integer, nullable=False)
-    match_format = Column(String, nullable=False)
     starting_life = Column(Integer, nullable=False, default=20)
     status = Column(String, nullable=False, default="registration")
     current_round = Column(Integer, default=0)
