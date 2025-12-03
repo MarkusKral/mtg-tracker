@@ -530,8 +530,6 @@
         }
 
         async function generateSchedule() {
-            if (!confirm('Generate schedule? Players will no longer be able to join.')) return;
-
             try {
                 const response = await fetch(
                     `${API_URL}/api/admin/tournament/${currentTournament.tournament_id}/generate-schedule`,
