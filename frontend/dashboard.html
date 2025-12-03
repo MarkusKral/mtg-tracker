@@ -882,8 +882,11 @@
             const initial = player.name.charAt(0).toUpperCase();
             const isWinner = winnerId === player.player_id;
 
-            const avatarContent = player.avatar_url 
-                ? `<img src="${API_URL}${player.avatar_url}" alt="${player.name}" onerror="this.parentElement.innerHTML='<div class=\\'player-avatar-initial\\'>${initial}</div>'">`
+            const avatarSrc = player.avatar_url 
+                ? (player.avatar_url.startsWith('http') ? player.avatar_url : `${API_URL}${player.avatar_url}`)
+                : null;
+            const avatarContent = avatarSrc
+                ? `<img src="${avatarSrc}" alt="${player.name}" onerror="this.parentElement.innerHTML='<div class=\\'player-avatar-initial\\'>${initial}</div>'">`
                 : `<div class="player-avatar-initial">${initial}</div>`;
 
             return `

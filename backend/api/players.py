@@ -64,7 +64,8 @@ async def update_profile(
     player_id: int,
     name: Optional[str] = Form(None),
     colors: Optional[str] = Form(None),
-    preset_id: Optional[str] = Form(None),
+    avatar_url: Optional[str] = Form(None),
+    remove_avatar: Optional[str] = Form(None),
     avatar: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db)
 ):
@@ -84,8 +85,8 @@ async def update_profile(
         except json.JSONDecodeError:
             raise HTTPException(status_code=400, detail="Invalid colors format")
 
-    # Handle avatar upload
-    if avatar:
+    # Handle avatar - priority: upload > predefined URL > remove
+    if avatar and avatar.filename:
         os.makedirs(AVATARS_DIR, exist_ok=True)
 
         # Generate unique filename
@@ -99,20 +100,41 @@ async def update_profile(
 
         player.avatar_path = unique_filename
 
-    elif preset_id:
-        player.avatar_path = f"preset_{preset_id}"
+    elif avatar_url:
+        # Store external URL directly (for predefined avatars)
+        player.avatar_path = avatar_url
+
+    elif remove_avatar == 'true':
+        player.avatar_path = None
 
     db.commit()
     db.refresh(player)
 
     colors_list = json.loads(player.colors) if player.colors else []
+    
+    # Determine avatar URL - external or local
+    final_avatar_url = None
+    if player.avatar_path:
+        if player.avatar_path.startswith('http'):
+            final_avatar_url = player.avatar_path
+        else:
+            final_avatar_url = f"/uploads/avatars/{player.avatar_path}"
 
     return {
         "player_id": player.id,
         "name": player.name,
-        "avatar_url": f"/uploads/avatars/{player.avatar_path}" if player.avatar_path else None,
+        "avatar_url": final_avatar_url,
         "colors": colors_list
     }
+
+
+def get_avatar_url(avatar_path: Optional[str]) -> Optional[str]:
+    """Get the proper avatar URL - external or local."""
+    if not avatar_path:
+        return None
+    if avatar_path.startswith('http'):
+        return avatar_path
+    return f"/uploads/avatars/{avatar_path}"
 
 
 @router.get("/{player_id}/profile", response_model=PlayerResponse)
@@ -138,7 +160,7 @@ def get_profile(player_id: int, db: Session = Depends(get_db)):
         "player_id": player.id,
         "tournament_id": player.tournament_id,
         "name": player.name,
-        "avatar_url": f"/uploads/avatars/{player.avatar_path}" if player.avatar_path else None,
+        "avatar_url": get_avatar_url(player.avatar_path),
         "colors": colors_list,
         "wins": wins,
         "losses": losses
@@ -178,7 +200,7 @@ def get_player_matches(player_id: int, db: Session = Depends(get_db)):
                 round_number=current_round.round_number,
                 opponent=OpponentInfo(
                     name=opponent.name,
-                    avatar_url=f"/uploads/avatars/{opponent.avatar_path}" if opponent.avatar_path else None,
+                    avatar_url=get_avatar_url(opponent.avatar_path),
                     colors=opponent_colors
                 ),
                 status=match.status

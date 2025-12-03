@@ -240,6 +240,31 @@
         }
         
         .standing-row:nth-child(1) td:first-child .rank-num { color: var(--accent-gold); }
+        
+        .predefined-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid var(--border);
+            overflow: hidden;
+            transition: all 0.2s ease;
+            background: var(--bg-secondary);
+        }
+        .predefined-avatar:hover {
+            transform: scale(1.1);
+            border-color: var(--text-secondary);
+        }
+        .predefined-avatar.selected {
+            border-color: var(--accent-gold);
+            border-width: 3px;
+            box-shadow: 0 0 12px rgba(184, 134, 11, 0.4);
+        }
+        .predefined-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
     </style>
 </head>
 <body>
@@ -410,7 +435,7 @@
 
     <!-- Profile Settings Modal -->
     <div id="profile-modal" class="modal">
-        <div class="card p-8 max-w-md w-11/12 mx-4">
+        <div class="card p-8 max-w-lg w-11/12 mx-4 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="font-display text-2xl font-semibold">Profile Settings</h2>
                 <button onclick="closeProfileSettings()" class="text-2xl" style="color: var(--text-muted)">×</button>
@@ -420,19 +445,27 @@
             <div class="mb-6">
                 <label class="block text-sm font-medium mb-3" style="color: var(--text-secondary)">Profile Picture</label>
                 <div class="flex flex-col items-center gap-4">
-                    <div class="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center" style="background: var(--bg-secondary); border: 2px solid var(--border)">
+                    <div class="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center" style="background: var(--bg-secondary); border: 3px solid var(--border)" id="avatar-preview-container">
                         <img id="avatar-preview" src="" alt="Avatar" class="w-full h-full object-cover hidden">
                         <span id="avatar-placeholder" class="text-4xl" style="color: var(--text-muted)">👤</span>
                     </div>
                     <div class="flex gap-2">
                         <label class="btn-outline px-4 py-2 rounded-lg cursor-pointer text-sm">
-                            Upload
+                            Upload Custom
                             <input type="file" id="avatar-upload" accept="image/*" class="hidden" onchange="previewAvatar(this)">
                         </label>
                         <button onclick="removeAvatar()" class="btn-outline px-4 py-2 rounded-lg text-sm">
                             Remove
                         </button>
                     </div>
+                </div>
+            </div>
+
+            <!-- Predefined MTG Avatars -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-3" style="color: var(--text-secondary)">Or choose an iconic card</label>
+                <div class="grid grid-cols-5 gap-2" id="predefined-avatars">
+                    <!-- Will be populated by JavaScript -->
                 </div>
             </div>
 
@@ -467,6 +500,31 @@
         let matchWebSocket = null;
         let selectedColors = [];
         let currentAvatarFile = null;
+        let selectedPredefinedAvatar = null;
+
+        // 20 Iconic MTG Cards - using Scryfall art crop images
+        const PREDEFINED_AVATARS = [
+            { name: "Black Lotus", url: "https://cards.scryfall.io/art_crop/front/b/d/bd8fa327-dd41-4737-8f19-2cf5eb1f7571.jpg" },
+            { name: "Lightning Bolt", url: "https://cards.scryfall.io/art_crop/front/f/2/f29ba16f-c8fb-42fe-aabf-87089cb214a7.jpg" },
+            { name: "Serra Angel", url: "https://cards.scryfall.io/art_crop/front/9/0/9067f035-3437-4c5c-bae9-d3c9001a3571.jpg" },
+            { name: "Shivan Dragon", url: "https://cards.scryfall.io/art_crop/front/2/2/227cf1b5-f85b-41fe-be98-66e383571f46.jpg" },
+            { name: "Counterspell", url: "https://cards.scryfall.io/art_crop/front/1/b/1b73577a-8ca1-41d7-9b2b-7300286fde43.jpg" },
+            { name: "Dark Ritual", url: "https://cards.scryfall.io/art_crop/front/9/5/95f27eeb-6f14-4db3-adb9-9be5ed76b34b.jpg" },
+            { name: "Llanowar Elves", url: "https://cards.scryfall.io/art_crop/front/8/b/8bbcfb77-daa1-4ce5-b5f9-48d0a8edbba9.jpg" },
+            { name: "Birds of Paradise", url: "https://cards.scryfall.io/art_crop/front/f/e/feefe9f0-24a6-461c-9ef1-86c5a6f33b83.jpg" },
+            { name: "Wrath of God", url: "https://cards.scryfall.io/art_crop/front/6/6/664e6656-36a3-4f2b-8138-40ce176ad9e0.jpg" },
+            { name: "Jace, the Mind Sculptor", url: "https://cards.scryfall.io/art_crop/front/c/8/c8817585-0d32-4d56-9142-0d29512e86a9.jpg" },
+            { name: "Liliana of the Veil", url: "https://cards.scryfall.io/art_crop/front/d/1/d12c8c97-6491-452c-811d-943571a7f2ce.jpg" },
+            { name: "Tarmogoyf", url: "https://cards.scryfall.io/art_crop/front/6/9/69daba76-96e8-4bcc-ab79-2f00189ad8fb.jpg" },
+            { name: "Sol Ring", url: "https://cards.scryfall.io/art_crop/front/1/9/199cde21-5bc3-49cd-acd4-bae3571b2f2f.jpg" },
+            { name: "Force of Will", url: "https://cards.scryfall.io/art_crop/front/8/9/89f612d6-7c59-4a7b-a87d-45f789e88ba5.jpg" },
+            { name: "Brainstorm", url: "https://cards.scryfall.io/art_crop/front/4/8/48070245-1370-4cf1-be15-d4e8a8b92ba8.jpg" },
+            { name: "Swords to Plowshares", url: "https://cards.scryfall.io/art_crop/front/7/d/7d839f21-68c7-47db-8407-ff3e2c3e13b4.jpg" },
+            { name: "Goblin Guide", url: "https://cards.scryfall.io/art_crop/front/3/c/3c0f5411-1571-4f56-9f58-c1b7f4c60a33.jpg" },
+            { name: "Snapcaster Mage", url: "https://cards.scryfall.io/art_crop/front/7/e/7e41765e-43fe-461d-baeb-ee30d13d2d93.jpg" },
+            { name: "Path to Exile", url: "https://cards.scryfall.io/art_crop/front/9/0/90460227-6f34-4571-a395-cdf7fce4f036.jpg" },
+            { name: "Thoughtseize", url: "https://cards.scryfall.io/art_crop/front/b/2/b281a308-ab6b-47b6-bec7-632c9dar8b73.jpg" }
+        ];
         let shouldRemoveAvatar = false;
         let pollInterval = null;
 
@@ -575,7 +633,7 @@
                     const avatarPlaceholder = document.getElementById('player-avatar-placeholder');
                     
                     if (profile.avatar_url) {
-                        avatarDisplay.src = API_URL + profile.avatar_url;
+                        avatarDisplay.src = profile.avatar_url.startsWith('http') ? profile.avatar_url : API_URL + profile.avatar_url;
                         avatarDisplay.classList.remove('hidden');
                         avatarPlaceholder.classList.add('hidden');
                     } else {
@@ -865,12 +923,52 @@
             loadStandings();
         }
 
+        function renderPredefinedAvatars() {
+            const container = document.getElementById('predefined-avatars');
+            container.innerHTML = PREDEFINED_AVATARS.map((avatar, index) => `
+                <div class="predefined-avatar" 
+                     onclick="selectPredefinedAvatar(${index})" 
+                     data-index="${index}"
+                     title="${avatar.name}">
+                    <img src="${avatar.url}" alt="${avatar.name}" loading="lazy">
+                </div>
+            `).join('');
+        }
+
+        function selectPredefinedAvatar(index) {
+            // Clear custom upload
+            currentAvatarFile = null;
+            document.getElementById('avatar-upload').value = '';
+            
+            // Set selected predefined avatar
+            selectedPredefinedAvatar = PREDEFINED_AVATARS[index].url;
+            
+            // Update UI - highlight selected
+            document.querySelectorAll('.predefined-avatar').forEach((el, i) => {
+                el.classList.toggle('selected', i === index);
+            });
+            
+            // Update preview
+            const avatarPreview = document.getElementById('avatar-preview');
+            const avatarPlaceholder = document.getElementById('avatar-placeholder');
+            avatarPreview.src = selectedPredefinedAvatar;
+            avatarPreview.classList.remove('hidden');
+            avatarPlaceholder.classList.add('hidden');
+            
+            // Update preview container border
+            document.getElementById('avatar-preview-container').style.borderColor = 'var(--accent-gold)';
+        }
+
         function openProfileSettings() {
             const playerId = localStorage.getItem('playerId');
             if (!playerId) return;
 
             currentAvatarFile = null;
             shouldRemoveAvatar = false;
+            selectedPredefinedAvatar = null;
+
+            // Render predefined avatars
+            renderPredefinedAvatars();
 
             fetch(`${API_URL}/api/players/${playerId}/profile`)
                 .then(res => res.json())
@@ -884,9 +982,26 @@
                     
                     const avatarPreview = document.getElementById('avatar-preview');
                     const avatarPlaceholder = document.getElementById('avatar-placeholder');
+                    const previewContainer = document.getElementById('avatar-preview-container');
+                    
+                    // Reset predefined avatar selection
+                    document.querySelectorAll('.predefined-avatar').forEach(el => el.classList.remove('selected'));
+                    previewContainer.style.borderColor = 'var(--border)';
                     
                     if (profile.avatar_url) {
-                        avatarPreview.src = API_URL + profile.avatar_url;
+                        // Check if it's a predefined avatar
+                        const predefinedIndex = PREDEFINED_AVATARS.findIndex(a => profile.avatar_url === a.url || profile.avatar_url.includes(a.url));
+                        if (predefinedIndex >= 0) {
+                            document.querySelector(`.predefined-avatar[data-index="${predefinedIndex}"]`)?.classList.add('selected');
+                            avatarPreview.src = PREDEFINED_AVATARS[predefinedIndex].url;
+                            previewContainer.style.borderColor = 'var(--accent-gold)';
+                        } else if (profile.avatar_url.startsWith('http')) {
+                            // External URL (predefined)
+                            avatarPreview.src = profile.avatar_url;
+                        } else {
+                            // Custom upload
+                            avatarPreview.src = profile.avatar_url.startsWith('http') ? profile.avatar_url : API_URL + profile.avatar_url;
+                        }
                         avatarPreview.classList.remove('hidden');
                         avatarPlaceholder.classList.add('hidden');
                     } else {
@@ -927,6 +1042,11 @@
                 
                 currentAvatarFile = file;
                 shouldRemoveAvatar = false;
+                selectedPredefinedAvatar = null; // Clear predefined selection
+                
+                // Clear predefined avatar selection UI
+                document.querySelectorAll('.predefined-avatar').forEach(el => el.classList.remove('selected'));
+                document.getElementById('avatar-preview-container').style.borderColor = 'var(--border)';
                 
                 const reader = new FileReader();
                 reader.onload = function(e) {
@@ -944,7 +1064,10 @@
             document.getElementById('avatar-preview').classList.add('hidden');
             document.getElementById('avatar-placeholder').classList.remove('hidden');
             document.getElementById('avatar-upload').value = '';
+            document.getElementById('avatar-preview-container').style.borderColor = 'var(--border)';
+            document.querySelectorAll('.predefined-avatar').forEach(el => el.classList.remove('selected'));
             currentAvatarFile = null;
+            selectedPredefinedAvatar = null;
             shouldRemoveAvatar = true;
         }
 
@@ -958,6 +1081,10 @@
                 
                 if (currentAvatarFile) {
                     formData.append('avatar', currentAvatarFile);
+                } else if (selectedPredefinedAvatar) {
+                    formData.append('avatar_url', selectedPredefinedAvatar);
+                } else if (shouldRemoveAvatar) {
+                    formData.append('remove_avatar', 'true');
                 }
                 
                 const response = await fetch(`${API_URL}/api/players/${playerId}/profile`, {

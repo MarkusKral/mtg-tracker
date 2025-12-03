@@ -4,7 +4,7 @@ from database.database import get_db
 from models import Tournament, Round, Match, Player
 from schemas.tournament import TournamentStatus, StandingsResponse, ScheduleResponse, RoundSchedule, MatchSchedule
 from schemas.match import CurrentRoundResponse, MatchDetails, MatchPlayerInfo
-from services.tournament_service import TournamentService
+from services.tournament_service import TournamentService, get_avatar_url
 import json
 
 router = APIRouter(prefix="/api/tournament", tags=["tournament"])
@@ -111,14 +111,14 @@ def get_current_round(tournament_id: int, db: Session = Depends(get_db)):
             player1=MatchPlayerInfo(
                 player_id=player1.id,
                 name=player1.name,
-                avatar_url=f"/uploads/avatars/{player1.avatar_path}" if player1.avatar_path else None,
+                avatar_url=get_avatar_url(player1.avatar_path),
                 colors=player1_colors,
                 health=match.player1_health
             ),
             player2=MatchPlayerInfo(
                 player_id=player2.id,
                 name=player2.name,
-                avatar_url=f"/uploads/avatars/{player2.avatar_path}" if player2.avatar_path else None,
+                avatar_url=get_avatar_url(player2.avatar_path),
                 colors=player2_colors,
                 health=match.player2_health
             ),

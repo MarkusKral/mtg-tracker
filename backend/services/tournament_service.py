@@ -6,6 +6,15 @@ from typing import List, Optional
 import json
 
 
+def get_avatar_url(avatar_path: Optional[str]) -> Optional[str]:
+    """Get the proper avatar URL - external or local."""
+    if not avatar_path:
+        return None
+    if avatar_path.startswith('http'):
+        return avatar_path
+    return f"/uploads/avatars/{avatar_path}"
+
+
 class TournamentService:
     @staticmethod
     def create_tournament(db: Session, tournament_data: dict) -> Tournament:
@@ -102,7 +111,7 @@ class TournamentService:
             standings.append({
                 "player_id": player.id,
                 "name": player.name,
-                "avatar_url": f"/uploads/avatars/{player.avatar_path}" if player.avatar_path else None,
+                "avatar_url": get_avatar_url(player.avatar_path),
                 "colors": colors,
                 "wins": wins,
                 "losses": losses,
