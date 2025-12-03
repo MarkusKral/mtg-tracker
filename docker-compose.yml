@@ -1,0 +1,22 @@
+# MTG Tournament Tracker - Docker Compose
+# For Unraid, use this as a template or deploy via Portainer/Docker CLI
+
+version: '3.8'
+
+services:
+  mtg-tournament:
+    build: .
+    container_name: mtg-tournament-tracker
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persistent data - map to your Unraid appdata folder
+      - ./data:/app/data
+      - ./uploads:/app/backend/uploads
+    environment:
+      - DATABASE_URL=sqlite:////app/data/mtg_tournament.db
+      - ADMIN_PASSWORD=admin
+      - JWT_SECRET=change-this-to-a-random-secret-key
+      - ALLOWED_ORIGINS=*
+    restart: unless-stopped
+
