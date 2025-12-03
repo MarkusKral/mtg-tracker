@@ -530,6 +530,8 @@
         }
 
         async function generateSchedule() {
+            if (!confirm('Generate schedule? Players will no longer be able to join.')) return;
+
             try {
                 const response = await fetch(
                     `${API_URL}/api/admin/tournament/${currentTournament.tournament_id}/generate-schedule`,
@@ -541,8 +543,6 @@
 
                 if (!response.ok) throw new Error('Failed to generate schedule');
 
-                const data = await response.json();
-                alert(`Schedule generated: ${data.rounds_created} rounds, ${data.total_matches} matches`);
                 loadCurrentTournament();
             } catch (error) {
                 console.error('Error generating schedule:', error);
