@@ -20,6 +20,40 @@ class SimulatedPlayer:
     current_match_id: Optional[int] = None
     current_health: int = 20
 
+# 30 Iconic MTG Card Avatars (Scryfall art crops)
+PREDEFINED_AVATARS = [
+    "https://cards.scryfall.io/art_crop/front/b/d/bd8fa327-dd41-4737-8f19-2cf5eb1f7cdd.jpg",  # Black Lotus
+    "https://cards.scryfall.io/art_crop/front/f/2/f29ba16f-c8fb-42fe-aabf-87089cb214a7.jpg",  # Lightning Bolt
+    "https://cards.scryfall.io/art_crop/front/3/c/3cee9303-9d65-45a2-93d4-ef4aba59141b.jpg",  # Serra Angel
+    "https://cards.scryfall.io/art_crop/front/1/f/1fcff1e0-2745-448d-a27b-e31719e222e9.jpg",  # Shivan Dragon
+    "https://cards.scryfall.io/art_crop/front/1/b/1b73577a-8ca1-41d7-9b2b-7300286fde43.jpg",  # Counterspell
+    "https://cards.scryfall.io/art_crop/front/9/5/95f27eeb-6f14-4db3-adb9-9be5ed76b34b.jpg",  # Dark Ritual
+    "https://cards.scryfall.io/art_crop/front/8/b/8bbcfb77-daa1-4ce5-b5f9-48d0a8edbba9.jpg",  # Llanowar Elves
+    "https://cards.scryfall.io/art_crop/front/f/e/feefe9f0-24a6-461c-9ef1-86c5a6f33b83.jpg",  # Birds of Paradise
+    "https://cards.scryfall.io/art_crop/front/5/3/537d2b05-3f52-45d6-8fe3-26282085d0c6.jpg",  # Wrath of God
+    "https://cards.scryfall.io/art_crop/front/c/8/c8817585-0d32-4d56-9142-0d29512e86a9.jpg",  # Jace, the Mind Sculptor
+    "https://cards.scryfall.io/art_crop/front/d/1/d12c8c97-6491-452c-811d-943441a7ef9f.jpg",  # Liliana of the Veil
+    "https://cards.scryfall.io/art_crop/front/6/9/69daba76-96e8-4bcc-ab79-2f00189ad8fb.jpg",  # Tarmogoyf
+    "https://cards.scryfall.io/art_crop/front/e/e/ee6e5a35-fe21-4dee-b0ef-a8f2841511ad.jpg",  # Sol Ring
+    "https://cards.scryfall.io/art_crop/front/8/9/89f612d6-7c59-4a7b-a87d-45f789e88ba5.jpg",  # Force of Will
+    "https://cards.scryfall.io/art_crop/front/4/8/48070245-1370-4cf1-be15-d4e8a8b92ba8.jpg",  # Brainstorm
+    "https://cards.scryfall.io/art_crop/front/7/d/7d839f21-68c7-47db-8407-ff3e2c3e13b4.jpg",  # Swords to Plowshares
+    "https://cards.scryfall.io/art_crop/front/3/c/3c0f5411-1940-410f-96ce-6f92513f753a.jpg",  # Goblin Guide
+    "https://cards.scryfall.io/art_crop/front/7/e/7e41765e-43fe-461d-baeb-ee30d13d2d93.jpg",  # Snapcaster Mage
+    "https://cards.scryfall.io/art_crop/front/a/7/a7aed564-2d2d-42c4-bf11-812bc1a0284c.jpg",  # Path to Exile
+    "https://cards.scryfall.io/art_crop/front/b/2/b281a308-ab6b-47b6-bec7-632c9aaecede.jpg",  # Thoughtseize
+    "https://cards.scryfall.io/art_crop/front/2/4/249db4d4-2542-47ee-a216-e13ffbc2319c.jpg",  # Emrakul, the Aeons Torn
+    "https://cards.scryfall.io/art_crop/front/4/0/4069e510-f3f3-4668-9f13-3546fa9bc7c3.jpg",  # Griselbrand
+    "https://cards.scryfall.io/art_crop/front/5/d/5d275f04-cc60-4e3f-95cc-3d02bc916b82.jpg",  # Wurmcoil Engine
+    "https://cards.scryfall.io/art_crop/front/6/d/6d5537da-112e-4679-a113-b5d7ce32a66b.jpg",  # Primeval Titan
+    "https://cards.scryfall.io/art_crop/front/2/5/2520ab23-a068-4462-b261-2754409b4108.jpg",  # Dark Confidant
+    "https://cards.scryfall.io/art_crop/front/c/d/cd702cf1-10ca-4448-9fb1-b6de635e839c.jpg",  # Vendilion Clique
+    "https://cards.scryfall.io/art_crop/front/b/e/beda7acd-e970-4222-9577-5133765d6052.jpg",  # Thragtusk
+    "https://cards.scryfall.io/art_crop/front/2/7/276f5cee-a501-4658-bd4d-7a044bf1ccbc.jpg",  # Craterhoof Behemoth
+    "https://cards.scryfall.io/art_crop/front/d/6/d6bfa227-4309-40ed-952c-279595eab17e.jpg",  # Monastery Swiftspear
+    "https://cards.scryfall.io/art_crop/front/6/9/6904ea20-e504-47da-95a0-08739fdde260.jpg",  # Delver of Secrets
+]
+
 class TournamentSimulator:
     def __init__(
         self,
@@ -144,6 +178,7 @@ class TournamentSimulator:
         for i in range(self.num_players):
             name = self.generate_player_name(i)
             colors = self.generate_random_colors()
+            avatar_url = random.choice(PREDEFINED_AVATARS)
 
             response = requests.post(
                 f"{self.api_url}/api/players/join",
@@ -160,11 +195,14 @@ class TournamentSimulator:
             player_data = response.json()
             player_id = player_data["player_id"]
 
-            # Update profile with colors
+            # Update profile with colors and avatar
             import json
             requests.put(
                 f"{self.api_url}/api/players/{player_id}/profile",
-                data={"colors": json.dumps(colors)}
+                data={
+                    "colors": json.dumps(colors),
+                    "avatar_url": avatar_url
+                }
             )
 
             player = SimulatedPlayer(
