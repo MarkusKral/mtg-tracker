@@ -1122,6 +1122,9 @@
 
         // Simple result modal
         function showMatchResult(message, isWinner) {
+            // Prevent duplicate modals
+            if (document.getElementById('result-modal')) return;
+            
             const modal = document.createElement('div');
             modal.className = 'modal active';
             modal.id = 'result-modal';
